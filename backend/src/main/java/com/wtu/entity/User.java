@@ -35,7 +35,7 @@ public class User implements Serializable {
     private Integer role;
 
     @Schema(description = "用户账户状态")//0-正常 1-封禁 2-待激活
-    private Integer staus;
+    private Integer status;
 
     @Schema(description = "账户注册时间")@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
