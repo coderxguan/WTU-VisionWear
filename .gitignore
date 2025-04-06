@@ -44,5 +44,5 @@ docker-compose.override.yml
 # 忽略数据库相关
 *.sqlite
 *.db
-*.sql
+
 
