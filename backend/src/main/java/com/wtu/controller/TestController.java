@@ -19,7 +19,10 @@ public class TestController {
      @Operation(description = "测试接口")
      public Result test() {
             log.info("测试接口正在运行");
+            log.error("测试接口正在运行");
+            log.warn("测试接口正在运行");
          return Result.success("test");
      }
+
 
 }
