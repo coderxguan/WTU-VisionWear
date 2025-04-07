@@ -1,6 +1,8 @@
 package com.wtu.interceptor;
 
 import com.wtu.properties.JwtProperties;
+import com.wtu.utils.JwtUtil;
+import io.jsonwebtoken.Claims;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -26,8 +28,11 @@ public class JwtTokenInterceptor implements HandlerInterceptor {
         try {
             //检查token
             log.info("检验开始");
+
             String token = request.getHeader(jwtProperties.getTokenName());
+            Claims claims = JwtUtil.parseJwt(jwtProperties.getSecretKey(), token);
             log.info("检验token: {}",token);
+            log.info("检验封装数据:{}",claims.toString());
         } catch (Exception e) {
             //token不存在相应claims，则报错,响应码变成401
             response.setStatus(401);
