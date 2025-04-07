@@ -32,8 +32,8 @@ public class WebConfig implements WebMvcConfigurer {
         log.info("开始注册拦截器...");
         registry.addInterceptor(jwtTokenInterceptor)
                 .addPathPatterns("/**")
-                .excludePathPatterns("/login")
-                .excludePathPatterns("/register")   //作用于所有请求,但免除login请求
+                .excludePathPatterns("/api/auth/login")
+                .excludePathPatterns("/api/auth/register")   //作用于所有请求,但免除login请求
                 .excludePathPatterns(   // 排除 Swagger 和相关 API 文档路径
                         "/doc.html",             // Swagger UI
                         "/swagger-ui.html",      // Swagger UI
