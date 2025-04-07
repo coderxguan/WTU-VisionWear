@@ -19,7 +19,7 @@ public class JwtTokenInterceptor implements HandlerInterceptor {
     private JwtProperties jwtProperties;
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {    // 获取请求路径
         //检测是否为动态方法，如果不是，直接放行
         if(!(handler instanceof HandlerMethod)){
             return true;

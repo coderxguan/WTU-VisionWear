@@ -33,6 +33,16 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(jwtTokenInterceptor)
                 .addPathPatterns("/**")
                 .excludePathPatterns("/login")
-                .excludePathPatterns("/register");//作用于所有请求,但免除login请求
+                .excludePathPatterns("/register")   //作用于所有请求,但免除login请求
+                .excludePathPatterns(   // 排除 Swagger 和相关 API 文档路径
+                        "/doc.html",             // Swagger UI
+                        "/swagger-ui.html",      // Swagger UI
+                        "/swagger-ui/**",        // Swagger UI 相关路径
+                        "/v3/api-docs/**",       // OpenAPI 文档路径
+                        "/swagger-resources/**", // Swagger 资源路径
+                        "/webjars/**",           // Swagger 静态资源路径
+                        "/swagger/**"            // Swagger 其他路径
+                );
+
     }
 }

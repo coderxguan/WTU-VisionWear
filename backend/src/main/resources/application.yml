@@ -47,8 +47,8 @@ logging:
 vision:
   jwt:
     # 设置jwt签名加密时使用的秘钥
-    secret-key: WTU
+    secretKey: WTU
     # 设置jwt过期时间
     ttl: 10800000
     # 设置前端传递过来的令牌名称
-    token-name: token
+    tokenName: token
