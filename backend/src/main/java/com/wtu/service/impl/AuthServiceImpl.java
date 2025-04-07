@@ -3,6 +3,7 @@ package com.wtu.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.wtu.DTO.LoginDTO;
 import com.wtu.DTO.RegisterDTO;
+import com.wtu.VO.LoginVO;
 import com.wtu.entity.User;
 import com.wtu.exception.ServiceException;
 import com.wtu.mapper.UserMapper;
@@ -32,7 +33,7 @@ public class AuthServiceImpl implements AuthService {
 
 
     @Override
-    public String login(LoginDTO dto) {
+    public LoginVO login(LoginDTO dto) {
         // 1. 查用户
         User user = userMapper.selectOne(
                 new LambdaQueryWrapper<User>().eq(User::getUserName, dto.getUsername())
@@ -48,16 +49,24 @@ public class AuthServiceImpl implements AuthService {
             throw new ServiceException("账号状态异常，请联系管理员！");
         }
 
-//        // 4. 更新最后登录时间
-//        user.setLastLogin(LocalDateTime.now());
-//        userMapper.updateById(user);
+        // 4. 更新最后登录时间
+        user.setLastLogin(LocalDateTime.now());
+        userMapper.updateById(user);
 
         // 5. 生成 token
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", user.getUserId());
         claims.put("userName", user.getUserName());
 
-        return JwtUtil.createJwt(jwtProperties.getSecretKey(), jwtProperties.getTtl(), claims);
+        String token = JwtUtil.createJwt(jwtProperties.getSecretKey(), jwtProperties.getTtl(), claims);
+
+        // 6. 封装返回对象
+        LoginVO loginVO = new LoginVO();
+        loginVO.setUserId(user.getUserId());
+        loginVO.setUserName(user.getUserName());
+        loginVO.setToken(token);
+
+        return loginVO;
     }
 
 }

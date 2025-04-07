@@ -1,5 +1,7 @@
 package com.wtu.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,6 +18,7 @@ import java.time.LocalDateTime;
 @Builder
 @Schema(description = "用户类型实体")
 public class User implements Serializable {
+    @TableId(value = "user_id", type = IdType.AUTO)
     @Schema(description = "用户唯一性id")
     private Long userId;
 
