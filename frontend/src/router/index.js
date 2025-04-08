@@ -3,12 +3,10 @@ import LoginPage from '../views/LoginPage.vue';
 import HomePage from '../views/HomePage.vue';
 
 const routes = [
-    { path: '/home', component: HomePage, name: 'Home' },  // 给首页路由命名为 'Home'
-    { path: '/login', component: LoginPage, name: 'Login' },  // 给登录页路由命名为 'Login'
-    {
-        path: '/*', // 其他所有路径跳转到登录页面
-        redirect: '/login',
-    },
+    { path: '/', redirect: '/login' }, // 访问根路径时跳转到登录
+    { path: '/home', component: HomePage, name: 'Home' },
+    { path: '/login', component: LoginPage, name: 'Login' },
+    { path: '/:pathMatch(.*)*', redirect: '/login' }, // 捕获所有未知路径
 ];
 
 const router = createRouter({
