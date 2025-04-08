@@ -162,6 +162,7 @@ import { ref, onMounted, reactive } from 'vue'
 import { User, Lock, Message } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
 
 const router = useRouter()
 
@@ -245,37 +246,62 @@ const submitForm = (formName) => {
   })
 }
 
-// 处理注册 - 直接模拟成功不连接后端
+// 处理注册 - 连接后端API
 const handleRegister = async () => {
   loading.value = true
   try {
-    // 仅延迟模拟注册过程
-    await new Promise(resolve => setTimeout(resolve, 1000))
-
-    // 可以将用户信息存储在localStorage中，方便测试
-    localStorage.setItem('testUser', JSON.stringify({
+    // 准备请求数据，按照API文档的格式
+    const registerData = {
       username: registerForm.username,
+      password: registerForm.password,
       email: registerForm.email
-    }))
+    }
 
-    ElMessage({
-      message: '注册成功！',
-      type: 'success',
-      duration: 2000,
-      showClose: true,
-      center: true
-    })
+    // 发送注册请求到后端API
+    const response = await axios.post('/auth/register', registerData)
 
-    // 注册成功后跳转到登录页面
-    router.push({ name: 'Login' })
+    // 根据响应状态码处理不同情况
+    if (response.data.code === 1) { // 成功状态码为1
+      // 可以选择将用户信息存储在localStorage中
+      localStorage.setItem('userInfo', JSON.stringify({
+        username: registerForm.username,
+        email: registerForm.email
+      }))
+
+      ElMessage({
+        message: response.data.msg || '注册成功！',
+        type: 'success',
+        duration: 2000,
+        showClose: true,
+        center: true
+      })
+
+      // 注册成功后跳转到登录页面
+      router.push({ name: 'Login' })
+    } else if (response.data.code === 0) {
+      // 处理业务逻辑错误 (用户名已存在或邮箱已注册)
+      ElMessage.error(response.data.msg || '注册失败，请稍后重试')
+    } else {
+      // 其他未预期的错误
+      ElMessage.error('注册失败，请稍后重试')
+    }
   } catch (error) {
     console.error('注册过程中出错', error)
-    ElMessage.error('注册失败，请稍后重试')
+    // 处理网络错误或服务器错误
+    if (error.response) {
+      // 服务器响应了，但状态码不是2xx
+      ElMessage.error(error.response.data?.msg || `注册失败(${error.response.status})`)
+    } else if (error.request) {
+      // 请求已发出，但没有收到响应
+      ElMessage.error('服务器无响应，请检查网络连接')
+    } else {
+      // 请求设置时出错
+      ElMessage.error('请求错误: ' + error.message)
+    }
   } finally {
     loading.value = false
   }
 }
-
 // 显示用户协议
 const showTerms = () => {
   termsDialogVisible.value = true
