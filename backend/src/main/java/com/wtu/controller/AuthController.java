@@ -31,8 +31,12 @@ public class AuthController {
     @Operation(summary = "用户注册")
     @PostMapping("/register")
     public Result<Void> register(@RequestBody RegisterDTO dto) {
-        authService.register(dto);
-        return Result.success(null);
+        String msg = authService.register(dto);
+        if ("注册成功".equals(msg)) {
+            return Result.success(null, msg);
+        } else {
+            return Result.error(msg);
+        }
     }
 
     @Operation(summary = "用户登录")

@@ -1,5 +1,6 @@
 package com.wtu.service.impl;
 
+import cn.hutool.crypto.digest.DigestUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.wtu.DTO.LoginDTO;
 import com.wtu.DTO.RegisterDTO;
@@ -27,8 +28,31 @@ public class AuthServiceImpl implements AuthService {
     private JwtProperties jwtProperties;
 
     @Override
-    public void register(RegisterDTO dto) {
+    public String register(RegisterDTO dto) {
+        // 用户名重复判断
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<User>();
+        wrapper.eq(User::getUserName, dto.getUsername());
+        if (userMapper.selectOne(wrapper) != null) {
+            return "用户名已存在";
+        }
 
+        // 邮箱重复判断
+        LambdaQueryWrapper<User> emailWrapper = new LambdaQueryWrapper<>();
+        emailWrapper.eq(User::getEmail, dto.getEmail());
+        if (userMapper.selectOne(emailWrapper) != null) {
+            return "邮箱已注册";
+        }
+
+        // 保存用户
+        User user = new User();
+        user.setUserName(dto.getUsername());
+        user.setEmail(dto.getEmail());
+        user.setStatus(0);
+        // 密码加密
+        user.setPassWord(DigestUtil.md5Hex(dto.getPassword()));
+
+        userMapper.insert(user);
+        return "注册成功";
     }
 
 
@@ -39,8 +63,9 @@ public class AuthServiceImpl implements AuthService {
                 new LambdaQueryWrapper<User>().eq(User::getUserName, dto.getUsername())
         );
 
-        // 2. 判空 + 密码比对
-        if (user == null || !user.getPassWord().equals(dto.getPassword())) {
+        // 2. 判空 + 加密后密码比对
+        String password = DigestUtil.md5Hex(dto.getPassword());
+        if (user == null || !user.getPassWord().equals(password)) {
             throw new ServiceException("用户名或密码错误!");
         }
 

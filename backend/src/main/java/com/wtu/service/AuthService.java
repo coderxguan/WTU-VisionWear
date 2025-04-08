@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 public interface AuthService {
 
-    void register(@Valid RegisterDTO dto);
+    String register(@Valid RegisterDTO dto);
 
     LoginVO login(@Valid LoginDTO dto);
 }
