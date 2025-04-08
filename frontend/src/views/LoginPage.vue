@@ -122,6 +122,7 @@ import { ref, onMounted } from 'vue'
 import { User, Lock } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
+import axios from "axios";
 
 const router = useRouter()
 
