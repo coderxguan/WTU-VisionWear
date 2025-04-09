@@ -1,0 +1,30 @@
+{
+  "id": "4886894",
+  "name": "WTU",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "1312041",
+      "name": "登录",
+      "font_class": "denglu",
+      "unicode": "e612",
+      "unicode_decimal": 58898
+    },
+    {
+      "icon_id": "8288885",
+      "name": "信封",
+      "font_class": "xinfeng",
+      "unicode": "e857",
+      "unicode_decimal": 59479
+    },
+    {
+      "icon_id": "26664944",
+      "name": "首页",
+      "font_class": "shouye-copy",
+      "unicode": "e600",
+      "unicode_decimal": 58880
+    }
+  ]
+}
