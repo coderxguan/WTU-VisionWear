@@ -3,16 +3,14 @@
     <!-- 左边栏 -->
     <aside class="sidebar">
       <div class="logo">Vision<span class="logo-x">X</span></div>
-
       <router-link
         to="/home/fashion"
         class="menu-item"
         :class="{ active: activeFunction === 'model' }"
-        @click.native="selectMenu('model')"
+        @click="selectMenu('model')"
       >
-    <span class="iconfont icon-shouye-copy"></span>服装模创意生成
-</router-link>
-
+        <span class="iconfont icon-shouye-copy"></span>服装模创意生成
+      </router-link>
 
       <div v-if="showSubMenu" class="submenu">
         <router-link
@@ -89,37 +87,11 @@
       <header class="header">
         <div class="nav">
           <router-link to="/home/render"><span class="iconfont icon-shouye-copy"></span>渲染页面</router-link>
-          <router-link to="/home/material"><span class="iconfont icon-shouye-copy"></span>素材管理</router-link>
-          <router-link to="/home/design"><span class="iconfont icon-shouye-copy"></span>设计页面</router-link>
-          <router-link to="/home/image-processing"><span class="iconfont icon-shouye-copy"></span>图片处理</router-link>
+          <router-link to="/home/material"><span class="iconfont icon-xinfeng"></span>素材管理</router-link>
+          <router-link to="/home/design"><span class="iconfont icon-denglu"></span>设计页面</router-link>
+          <router-link to="/home/image-processing"><span class="iconfont icon-denglu"></span>图片处理</router-link>
         </div>
-        <div class="user-icon-area" @click="showUserPanel = !showUserPanel">
-          <span class="user-icon">👤</span>
-
-          <div class="user-panel-float" v-show="showUserPanel" @click.stop>
-            <div class="user-info">
-              <div class="avatar"></div>
-              <div>
-                <div>未登录用户</div>
-                <div class="user-id">ID: --</div>
-              </div>
-              <div class="switch">切换</div>
-            </div>
-            <div class="package-box">
-              <div class="package-title">基础套餐</div>
-              <div class="bar-label">建模额度 <span>3/100</span></div>
-              <div class="bar-bg"><div class="bar-fill" style="width: 3%;"></div></div>
-              <div class="bar-label">穿搭额度 <span>10/100</span></div>
-              <div class="bar-bg"><div class="bar-fill" style="width: 10%;"></div></div>
-              <button class="buy-btn">购买套餐</button>
-            </div>
-            <div class="user-actions">
-              <p>查看订单</p>
-              <p>联系客服</p>
-              <p>退出登录</p>
-            </div>
-          </div>
-        </div>
+      <userIconArea></userIconArea>
       </header>
 
       <!-- 搜索栏 -->
@@ -127,7 +99,6 @@
         <input type="text" placeholder="请输入关键词..." />
         <button>提交</button>
       </div>
-
       <!-- 展示图像区域 -->
       <router-view class="page-view" />
     </main>
@@ -136,7 +107,11 @@
 
 <script>
 import '../styles/fontClass/iconfont.css' 
+import UserIconArea from './userIconArea.vue';
 export default {
+  components: {
+    UserIconArea, 
+  },
   data() {
     return {
       showSubMenu: false,
@@ -253,36 +228,6 @@ export default {
   color: #007bff;
 }
 
-.user-icon-area {
-  position: relative;
-  display: inline-block;
-  cursor: pointer;
-}
-
-.user-icon {
-  font-size: 20px;
-  background: #eee;
-  padding: 6px;
-  border-radius: 50%;
-}
-
-.user-panel-float {
-  position: absolute;
-  top: 35px;
-  right: 0;
-  width: 280px;
-  background: #fff;
-  border: 1px solid #ccc;
-  padding: 15px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  z-index: 100;
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
-}
 
 .avatar {
   width: 40px;
@@ -441,5 +386,7 @@ export default {
   font-weight: bold;
   color: #1d4ed8; /* 可以选择让子菜单激活时保持原样 */
 }
-
+.iconfont {
+  padding: 0 10px;
+}
 </style>
