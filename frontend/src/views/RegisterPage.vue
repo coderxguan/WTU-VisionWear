@@ -1,6 +1,6 @@
 <!-- RegisterPage.vue -->
 <template>
-  <div class="register-container">
+  <div class="register-container" :class="{'dialog-mode': isDialog}">
     <div class="register-box">
       <div class="logo-area">
         <div class="logo-circle">
@@ -164,6 +164,17 @@ import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 
+// 新增的props，用于判断是否为弹窗模式
+const props = defineProps({
+  isDialog: {
+    type: Boolean,
+    default: false
+  }
+})
+
+// 新增的emit，用于弹窗模式下切换到登录组件
+const emit = defineEmits(['switch-to-login'])
+
 const router = useRouter()
 
 const registerForm = reactive({
@@ -276,8 +287,12 @@ const handleRegister = async () => {
         center: true
       })
 
-      // 注册成功后跳转到登录页面
-      router.push({ name: 'Login' })
+      // 注册成功后根据模式决定跳转到登录页面还是切换到登录弹窗
+      if (props.isDialog) {
+        emit('switch-to-login')
+      } else {
+        router.push({ name: 'Login' })
+      }
     } else if (response.data.code === 0) {
       // 处理业务逻辑错误 (用户名已存在或邮箱已注册)
       ElMessage.error(response.data.msg || '注册失败，请稍后重试')
@@ -313,9 +328,15 @@ const acceptAndCloseTerms = () => {
   termsDialogVisible.value = false
 }
 
-// 跳转到登录页
+// 跳转到登录页或切换到登录弹窗
 const goToLogin = () => {
-  router.push({ name: 'Login' })
+  if (props.isDialog) {
+    // 弹窗模式下，触发事件通知父组件切换为登录弹窗
+    emit('switch-to-login')
+  } else {
+    // 独立页面模式下，使用路由导航
+    router.push({ name: 'Login' })
+  }
 }
 </script>
 
@@ -328,6 +349,26 @@ const goToLogin = () => {
   background: linear-gradient(135deg, #43cea2, #185a9d, #6e48aa, #f46b45);
   background-size: 400% 400%;
   animation: gradientBG 20s ease infinite;
+}
+
+/* 弹窗模式下的样式修改 */
+.register-container.dialog-mode {
+  min-height: auto;
+  background: none;
+  animation: none;
+  padding: 0;
+}
+
+.dialog-mode .register-box {
+  width: 100%;
+  box-shadow: none;
+  padding: 20px;
+  transform: none;
+}
+
+.dialog-mode .register-box:hover {
+  transform: none;
+  box-shadow: none;
 }
 
 @keyframes gradientBG {

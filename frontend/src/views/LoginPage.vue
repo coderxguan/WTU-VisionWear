@@ -1,5 +1,5 @@
 <template>
-  <div class="login-container">
+  <div class="login-container" :class="{'dialog-mode': isDialog}">
     <div class="login-box">
       <div class="logo-area">
         <div class="logo-circle">
@@ -124,6 +124,17 @@ import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import axios from "axios";
 
+// 新增的props，用于判断是否为弹窗模式
+const props = defineProps({
+  isDialog: {
+    type: Boolean,
+    default: false
+  }
+})
+
+// 新增的emit，用于弹窗模式下切换到注册组件
+const emit = defineEmits(['switch-to-register'])
+
 const router = useRouter()
 
 const loginForm = ref({
@@ -207,9 +218,15 @@ const handleLogin = async () => {
   }
 }
 
-// 跳转到注册页面
+// 跳转到注册页面或触发切换到注册弹窗的事件
 const goToRegister = () => {
-  router.push({ name: 'Register' })
+  if (props.isDialog) {
+    // 弹窗模式下，触发事件通知父组件切换为注册弹窗
+    emit('switch-to-register')
+  } else {
+    // 独立页面模式下，使用路由导航
+    router.push({ name: 'Register' })
+  }
 }
 
 onMounted(() => {
@@ -230,6 +247,26 @@ onMounted(() => {
   background: linear-gradient(135deg, #43cea2, #185a9d, #6e48aa, #f46b45);
   background-size: 400% 400%;
   animation: gradientBG 20s ease infinite;
+}
+
+/* 弹窗模式下的样式修改 */
+.login-container.dialog-mode {
+  min-height: auto;
+  background: none;
+  animation: none;
+  padding: 0;
+}
+
+.dialog-mode .login-box {
+  width: 100%;
+  box-shadow: none;
+  padding: 20px;
+  transform: none;
+}
+
+.dialog-mode .login-box:hover {
+  transform: none;
+  box-shadow: none;
 }
 
 @keyframes gradientBG {

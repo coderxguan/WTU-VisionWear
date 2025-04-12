@@ -1,7 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import LoginPage from '../views/LoginPage.vue';
 import HomePage from '../views/HomePage.vue';
-import RegisterPage from "../views/RegisterPage.vue";
 import FashionMain from '../views/FashionMain.vue'
 import FashionOption1 from '../views/Fashionoption1.vue'
 import FashionOption2 from '../views/FashionOption2.vue'
@@ -14,10 +12,13 @@ import SketchToImagePage from '../views/SketchToImagePage.vue'
 import PartialRedrawPage from '../views/PartialRedrawPage.vue'
 import StyleTransferPage from '../views/StyleTransferPage.vue'
 import StyleExtensionPage from '../views/StyleExtensionPage.vue'
+import IntroPage from "../views/IntroPage.vue";
 
 const routes = [
 
-    { path: '/', redirect: '/login' }, // 访问根路径时跳转到登录
+    { path: '/', component: IntroPage, name: 'Intro' }, // 访问根路径时显示介绍页面
+    { path: '/home', component: HomePage, name: 'Home' },
+    { path: '/:pathMatch(.*)*', redirect: '/' }, // 捕获所有未知路径，重定向到介绍页面
     { 
       path: '/home', 
       component: HomePage, 
@@ -38,9 +39,6 @@ const routes = [
         { path: 'style-extension', component: StyleExtensionPage }
       ]
     },
-    { path: '/login', component: LoginPage, name: 'Login' },
-    { path: '/register', component: RegisterPage, name: 'Register' }, // 添加注册页面路由
-    { path: '/:pathMatch(.*)*', redirect: '/login' }, // 捕获所有未知路径
 ];
 
 const router = createRouter({
