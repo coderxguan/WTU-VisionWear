@@ -2,103 +2,125 @@
   <div class="container">
     <!-- 左边栏 -->
     <aside class="sidebar">
-      <div class="logo">Vision<span class="logo-x">X</span></div>
+      <div class="logo-container">
+        <div class="logo">Vision<span class="logo-x">Wear</span></div>
+      </div>
+
       <router-link
-        to="/home/fashion"
-        class="menu-item"
-        :class="{ active: activeFunction === 'model' }"
-        @click="selectMenu('model')"
+          to="/home/fashion"
+          class="menu-item el-menu-item"
+          :class="{ active: activeFunction === 'model' }"
+          @click="selectMenu('model')"
       >
-        <span class="iconfont icon-shouye-copy"></span>服装模创意生成
+        <el-icon><Grid /></el-icon>服装模创意生成
       </router-link>
 
       <div v-if="showSubMenu" class="submenu">
         <router-link
-        to="/home/fashion/option1"
-        class="menu-item sub"
-        :class="{ active: activeFunction === '选项1' }"
-        @click="selectMenu('选项1')"
-      >
-      选项1
-</router-link>
+            to="/home/fashion/option1"
+            class="menu-item sub el-menu-item"
+            :class="{ active: activeFunction === '选项1' }"
+            @click="selectMenu('选项1')"
+        >
+          选项1
+        </router-link>
 
-<router-link
-  to="/home/fashion/option2"
-  class="menu-item sub"
-  :class="{ active: activeFunction === '选项2' }"
-  @click="selectMenu('选项2')"
->
-  选项2
-</router-link>
+        <router-link
+            to="/home/fashion/option2"
+            class="menu-item sub el-menu-item"
+            :class="{ active: activeFunction === '选项2' }"
+            @click="selectMenu('选项2')"
+        >
+          选项2
+        </router-link>
 
-<router-link
-  to="/home/fashion/option3"
-  class="menu-item sub"
-  :class="{ active: activeFunction === '选项3' }"
-  @click="selectMenu('选项3')"
->
-  选项3
-</router-link>
-</div>
+        <router-link
+            to="/home/fashion/option3"
+            class="menu-item sub el-menu-item"
+            :class="{ active: activeFunction === '选项3' }"
+            @click="selectMenu('选项3')"
+        >
+          选项3
+        </router-link>
+      </div>
 
       <ul class="funktion-list">
         <router-link
-        to="/home/sketch"
-        class="menu-item"
-        :class="{ active: activeFunction === '线稿成图' }"
-        @click="selectMenu('线稿成图')"
+            to="/home/sketch"
+            class="menu-item el-menu-item"
+            :class="{ active: activeFunction === '线稿成图' }"
+            @click="selectMenu('线稿成图')"
         >
-        <span class="iconfont icon-xinfeng"></span>线稿成图
+          <el-icon><Edit /></el-icon>线稿成图
         </router-link>
 
         <router-link
-        to="/home/redraw"
-        class="menu-item"
-        :class="{ active: activeFunction === '局部重绘' }"
-        @click="selectMenu('局部重绘')"
+            to="/home/redraw"
+            class="menu-item el-menu-item"
+            :class="{ active: activeFunction === '局部重绘' }"
+            @click="selectMenu('局部重绘')"
         >
-        <span class="iconfont icon-denglu"></span>局部重绘
+          <el-icon><Brush /></el-icon>局部重绘
         </router-link>
 
         <router-link
-        to="/home/style-transfer"
-        class="menu-item"
-        :class="{ active: activeFunction === '风格迁移' }"
-        @click="selectMenu('风格迁移')"
+            to="/home/style-transfer"
+            class="menu-item el-menu-item"
+            :class="{ active: activeFunction === '风格迁移' }"
+            @click="selectMenu('风格迁移')"
         >
-        <span class="iconfont icon-denglu"></span>风格迁移
+          <el-icon><PictureFilled /></el-icon>风格迁移
         </router-link>
 
         <router-link
-        to="/home/style-extension"
-        class="menu-item"
-        :class="{ active: activeFunction === '风格延申' }"
-        @click="selectMenu('风格延申')"
+            to="/home/style-extension"
+            class="menu-item el-menu-item"
+            :class="{ active: activeFunction === '风格延申' }"
+            @click="selectMenu('风格延申')"
         >
-        <span class="iconfont icon-denglu"></span>风格延申
+          <el-icon><Picture /></el-icon>风格延申
         </router-link>
-
       </ul>
     </aside>
 
     <!-- 主体 -->
-    <main class="main">
+    <main class="main" :class="{ 'expanded': isCollapse }">
       <!-- 顶部栏 -->
       <header class="header">
         <div class="nav">
-          <router-link to="/home/render"><span class="iconfont icon-shouye-copy"></span>渲染页面</router-link>
-          <router-link to="/home/material"><span class="iconfont icon-xinfeng"></span>素材管理</router-link>
-          <router-link to="/home/design"><span class="iconfont icon-denglu"></span>设计页面</router-link>
-          <router-link to="/home/image-processing"><span class="iconfont icon-denglu"></span>图片处理</router-link>
+          <router-link to="/home/render" class="nav-link">
+            <el-icon><Monitor /></el-icon>渲染页面
+          </router-link>
+          <router-link to="/home/material" class="nav-link">
+            <el-icon><Folder /></el-icon>素材管理
+          </router-link>
+          <router-link to="/home/design" class="nav-link">
+            <el-icon><SetUp /></el-icon>设计页面
+          </router-link>
+          <router-link to="/home/image-processing" class="nav-link">
+            <el-icon><PictureRounded /></el-icon>图片处理
+          </router-link>
         </div>
-      <userIconArea></userIconArea>
+        <userIconArea></userIconArea>
       </header>
 
       <!-- 搜索栏 -->
       <div class="search-bar">
-        <input type="text" placeholder="请输入关键词..." />
-        <button>提交</button>
+        <el-input
+            v-model="searchText"
+            placeholder="请输入关键词..."
+            clearable
+            class="search-input"
+        >
+          <template #prefix>
+            <el-icon><Search /></el-icon>
+          </template>
+          <template #append>
+            <el-button type="primary">提交</el-button>
+          </template>
+        </el-input>
       </div>
+
       <!-- 展示图像区域 -->
       <router-view class="page-view" />
     </main>
@@ -106,11 +128,28 @@
 </template>
 
 <script>
-import '../styles/fontClass/iconfont.css' 
+import '../styles/fontClass/iconfont.css';
 import UserIconArea from './userIconArea.vue';
+import { ref } from 'vue';
+import {
+  Grid, Edit, Brush,
+  PictureFilled, Picture, Monitor,
+  Folder, SetUp, PictureRounded, Search
+} from '@element-plus/icons-vue';
+
 export default {
   components: {
-    UserIconArea, 
+    UserIconArea,
+    Grid, Edit, Brush,
+    PictureFilled, Picture, Monitor,
+    Folder, SetUp, PictureRounded, Search
+  },
+  setup() {
+    const searchText = ref('');
+
+    return {
+      searchText
+    };
   },
   data() {
     return {
@@ -131,7 +170,7 @@ export default {
     handleClickOutside(e) {
       const panel = this.$el.querySelector('.user-panel-float');
       const icon = this.$el.querySelector('.user-icon-area');
-      if (!panel.contains(e.target) && !icon.contains(e.target)) {
+      if (panel && icon && !panel.contains(e.target) && !icon.contains(e.target)) {
         this.showUserPanel = false;
       }
     },
@@ -149,56 +188,115 @@ export default {
 .container {
   display: flex;
   height: 100vh;
-  font-family: Arial, sans-serif;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 14px;
   color: #333;
+  background-color: #ffffff;
+  background-image: linear-gradient(135deg, #ffffff, #f9fafa);
 }
 
 .sidebar {
-  width: 220px;
-  background: #f7f9fb;
-  border-right: 1px solid #ddd;
-  padding: 10px;
+  width: 240px;
+  background: #ffffff;
+  padding: 0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s ease;
+  overflow-x: hidden;
+  position: relative;
+  z-index: 100;
+  border-radius: 0 16px 16px 0;
+  border-left: 4px solid #6a98e9;
+}
+
+.logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 28px 16px;
+  margin-bottom: 10px;
+  position: relative;
+}
+
+.logo-container::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 15%;
+  width: 70%;
+  height: 1px;
+  background: rgba(106, 152, 233, 0.2);
 }
 
 .logo {
-  font-size: 24px;
-  font-weight: bold;
-  color: #3aa655;
-  text-align: center;
-  margin-bottom: 20px;
+  font-size: 28px;
+  font-weight: 700;
+  color: #3f8cda;
+  white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  letter-spacing: 0.5px;
 }
 
 .logo-x {
-  color: #000;
+  color: #e2725b;
+  font-weight: 800;
 }
 
 .submenu {
-  margin-left: 12px;
+  margin-left: 16px;
+  padding-left: 14px;
+  border-left: 2px solid rgba(106, 152, 233, 0.3);
+  margin-top: 4px;
+  margin-bottom: 8px;
 }
 
 .menu-item {
-  display: block;
-  padding: 10px 10px;
-  padding-left: 10px;
+  display: flex;
+  align-items: center;
+  padding: 16px 22px;
   cursor: pointer;
-  border-radius: 4px;
-  transition: background-color 0.3s;
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  margin: 8px 10px;
+  text-decoration: none;
+  color: #5c6b7a;
+  font-weight: 500;
+}
+
+.menu-item .el-icon {
+  margin-right: 14px;
+  font-size: 18px;
+  transition: transform 0.2s ease;
+  color: #3f8cda;
 }
 
 .menu-item.sub {
-  font-size: 13px;
-  color: #555;
-  padding-left: 16px;
+  font-size: 14px;
+  color: #5c6b7a;
+  padding: 12px 16px;
+  margin: 6px 10px;
 }
 
-.menu-item.sub.active {
-  font-weight: bold;
-  color: #1d4ed8;
+.menu-item:hover {
+  background-color: rgba(106, 152, 233, 0.08);
+  transform: translateX(3px);
+  color: #3f8cda;
+}
+
+.menu-item:hover .el-icon {
+  transform: scale(1.1);
 }
 
 .menu-item.active {
-  background-color: #E5F5FD;
+  background-color: rgba(106, 152, 233, 0.15);
+  color: #3f8cda;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(106, 152, 233, 0.1);
+}
+
+.menu-item.sub.active {
+  font-weight: 600;
+  color: #3f8cda;
+  background-color: rgba(106, 152, 233, 0.1);
 }
 
 .main {
@@ -206,187 +304,152 @@ export default {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  transition: all 0.3s ease;
+  margin-left: 10px;
+}
+
+.main.expanded {
+  margin-left: -156px;
 }
 
 .header {
-  height: 50px;
-  border-bottom: 1px solid #ddd;
-  padding: 0 20px;
+  height: 64px;
+  background: linear-gradient(90deg, #6a98e9, #77cdf3);
+  padding: 0 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  border-radius: 12px;
+  margin: 12px 12px 0 12px;
 }
 
-.nav a {
-  margin-right: 20px;
-  color: #333;
-  text-decoration: none;
-  padding: 25px;
-}
-
-.nav a:hover {
-  color: #007bff;
-}
-
-
-.avatar {
-  width: 40px;
-  height: 40px;
-  background: #ccc;
-  border-radius: 50%;
-  margin-right: 10px;
-}
-
-.user-id {
-  font-size: 12px;
-  color: #888;
-}
-
-.switch {
-  margin-left: auto;
-  font-size: 12px;
-  color: #888;
-  cursor: pointer;
-}
-
-.package-box {
-  background: #f5f5f5;
-  padding: 10px;
-  border-radius: 4px;
-  margin-bottom: 20px;
-}
-
-.package-title {
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-.bar-label {
-  font-size: 12px;
-  margin: 6px 0 2px;
-}
-
-.bar-label span {
-  float: right;
-}
-
-.bar-bg {
-  background: #e0e0e0;
-  height: 6px;
-  border-radius: 3px;
-  overflow: hidden;
-  margin-bottom: 5px;
-}
-
-.bar-fill {
-  background: #2563eb;
-  height: 100%;
-}
-
-.buy-btn {
-  margin-top: 10px;
-  width: 100%;
-  background: #6366f1;
-  color: white;
-  padding: 6px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.user-actions p {
-  margin: 8px 0;
-  cursor: pointer;
-}
-
-.search-bar {
+.nav {
   display: flex;
-  padding: 15px 40px;
-  border-bottom: 1px solid #eee;
-}
-
-.search-bar input {
-  height: 45px;
-  padding: 0 10px;
-  border: 1px solid #ccc;
-  border-right: none;
-  border-radius: 4px 0 0 4px;
-  outline: none;
-  font-size: 14px;
-  width: 700px;
-  box-sizing: border-box;
-}
-
-.search-bar button {
-  height: 45px;
-  padding: 0 16px;
-  background-color: #007bff;
-  color: white;
-  border: 1px solid #007bff;
-  border-radius: 0 4px 4px 0;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.image-area {
-  flex: 1;
-  display: flex;
-  justify-content: center;
   align-items: center;
 }
 
-.image-area img {
-  max-height: 500px;
-  max-width: 90%;
-  object-fit: contain;
+.nav-link {
+  display: flex;
+  align-items: center;
+  margin-right: 24px;
+  color: rgba(255, 255, 255, 0.95);
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  padding: 10px 18px;
+  border-radius: 10px;
+}
+
+.nav-link:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.nav-link .el-icon {
+  margin-right: 10px;
+  font-size: 18px;
+  transition: transform 0.2s ease;
+}
+
+.nav-link:hover .el-icon {
+  transform: scale(1.1);
+}
+
+.search-bar {
+  padding: 20px 28px;
+  background-color: transparent;
+  margin-top: 10px;
+}
+
+.search-input {
+  width: 100%;
+  max-width: 800px;
+}
+
+.search-input :deep(.el-input__wrapper) {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  padding: 2px 16px;
+  border: 1px solid rgba(230, 230, 230, 0.5);
+  transition: all 0.3s ease;
+}
+
+.search-input :deep(.el-input__wrapper:hover) {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.search-input :deep(.el-input__inner) {
+  height: 48px;
+  font-size: 15px;
+}
+
+.search-input :deep(.el-input-group__append) {
+  background: linear-gradient(90deg, #6a98e9, #77cdf3);
+  border-radius: 0 12px 12px 0;
+  overflow: hidden;
+}
+
+.search-input :deep(.el-input-group__append .el-button) {
+  border: none;
+  color: white;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  padding: 12px 28px;
+  font-size: 15px;
+  height: 100%;
+  letter-spacing: 0.5px;
+}
+
+.search-input :deep(.el-input-group__append .el-button:hover) {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: scale(1.02);
+}
+
+.page-view {
+  flex: 1;
+  padding: 28px;
+  background-color: white;
+  margin: 16px;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(106, 152, 233, 0.05);
+}
+
+.page-view:hover {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
 }
 
 .funktion-list {
   list-style-type: none;
   padding: 0;
-  margin: 0;
+  margin: 20px 0 0 0;
 }
 
-.funktion-list .menu-item {
-  display: block;
-  /* padding: 10px 0; */
-  cursor: pointer;
-  border-radius: 4px;
-  transition: background-color 0.3s;
+/* Element Plus 组件样式覆盖 */
+:deep(.el-input__inner) {
+  height: 48px;
+  line-height: 48px;
 }
 
-.funktion-list .menu-item:hover {
-  background-color: #E5F5FD;
+:deep(.el-input-group__append) {
+  padding: 0;
 }
 
-.funktion-list .menu-item.active {
-  background-color: #E5F5FD;
-  font-weight: bold;
-  color: #1d4ed8;
+:deep(.el-input-group__append .el-button) {
+  border-radius: 0 12px 12px 0;
+  height: 48px;
+  padding: 0 20px;
 }
 
-.funktion-list .menu-item .iconfont {
-  margin-right: 8px;
-}
-.sidebar .menu-item {
-  text-decoration: none; /* 去除下划线 */
-  color: #333; /* 去除蓝色字体，保持默认字体颜色 */
-}
-
-.sidebar .menu-item:hover {
-  color: #333; /* 保持hover时颜色不变 */
-}
-
-.sidebar .menu-item.active {
-  background-color: #E5F5FD;
-  color: #333; /* 保持激活项字体颜色为默认颜色 */
-}
-
-.sidebar .menu-item.sub.active {
-  font-weight: bold;
-  color: #1d4ed8; /* 可以选择让子菜单激活时保持原样 */
-}
-.iconfont {
-  padding: 0 10px;
+:deep(.el-menu-item),
+:deep(.el-sub-menu__title) {
+  height: 54px;
+  line-height: 54px;
 }
 </style>
