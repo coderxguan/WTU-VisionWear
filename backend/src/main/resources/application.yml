@@ -52,3 +52,16 @@ vision:
     ttl: 10800000
     # 设置前端传递过来的令牌名称
     tokenName: token
+
+  api:
+      #设置stable APikey
+    key: sk-q135SxJ1N1QYhInKZRopMCxudXQS0THxwC1Y7rHKPBqsqxSz
+      #设置请求路径
+    url: https://api.stability.ai/v1
+      #设置超时时间
+    timeout: 60000
+
+    storagePath: ./images
+
+    maxSize: 10485760
+
