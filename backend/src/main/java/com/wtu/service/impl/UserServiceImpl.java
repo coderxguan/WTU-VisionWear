@@ -5,10 +5,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.wtu.DTO.ImageGenerationRequest;
-import com.wtu.DTO.ImageGenerationResponse;
+import com.wtu.DTO.TextToImageDTO;
+import com.wtu.VO.TextToImageVO;
 import com.wtu.config.StableDiffusionConfig;
-import com.wtu.exception.ServiceException;
 import com.wtu.service.ImageStorageService;
 import com.wtu.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +40,7 @@ public class UserServiceImpl implements UserService {
      * @return 图像生成响应
      */
     @Override
-    public ImageGenerationResponse textToimage(ImageGenerationRequest request) throws Exception {
+    public TextToImageVO textToimage(TextToImageDTO request) throws Exception {
         long startTime = System.currentTimeMillis();
         String requestId = UUID.randomUUID().toString();
         log.info("开始图像生成请求: {}, 提示: {}", requestId, request.getPrompt());
@@ -73,12 +72,12 @@ public class UserServiceImpl implements UserService {
 
             // 解析响应
             JsonNode responseJson = objectMapper.readTree(responseBody);
-            List<ImageGenerationResponse.GeneratedImage> generatedImages = parseResponse(responseJson);
+            List<TextToImageVO.GeneratedImage> generatedImages = parseResponse(responseJson);
 
             long duration = System.currentTimeMillis() - startTime;
             log.info("图像生成完成: {}, 耗时: {}ms", requestId, duration);
 
-            return ImageGenerationResponse.builder()
+            return TextToImageVO.builder()
                     .requestId(requestId)
                     .images(generatedImages)
                     .prompt(request.getPrompt())
@@ -98,7 +97,7 @@ public class UserServiceImpl implements UserService {
 
     }
 
-    private ObjectNode createRequestBody(ImageGenerationRequest request) {
+    private ObjectNode createRequestBody(TextToImageDTO request) {
         ObjectNode requestBody = objectMapper.createObjectNode();
 
         // 添加文本提示
@@ -131,22 +130,26 @@ public class UserServiceImpl implements UserService {
         return requestBody;
     }
 
-    private List<ImageGenerationResponse.GeneratedImage> parseResponse(JsonNode responseJson) {
-        List<ImageGenerationResponse.GeneratedImage> images = new ArrayList<>();
+    private List<TextToImageVO.GeneratedImage> parseResponse(JsonNode responseJson) {
+        List<TextToImageVO.GeneratedImage> images = new ArrayList<>();
 
         JsonNode artifacts = responseJson.path("artifacts");
         if (artifacts.isArray()) {
             for (JsonNode artifact : artifacts) {
                 String base64Image = artifact.path("base64").asText();
 
-                // 保存图像并获取ID
+                // 保存图像到OSS并获取ID
                 String imageId = imageStorageService.saveBase64Image(base64Image);
 
+                // 获取OSS访问URL
+                String imageUrl = imageStorageService.getImageUrl(imageId);
+
                 // 创建生成的图像对象
-                ImageGenerationResponse.GeneratedImage image = ImageGenerationResponse.GeneratedImage.builder()
+                TextToImageVO.GeneratedImage image = TextToImageVO.GeneratedImage.builder()
                         .imageId(imageId)
-                        .base64Image(base64Image)
-                        .imageUrl("/api/images/" + imageId)
+                        // 不再传递base64Image字段
+                        // .base64Image(base64Image)
+                        .imageUrl(imageUrl)  // 直接使用OSS URL
                         .width(artifact.path("width").asInt())
                         .height(artifact.path("height").asInt())
                         .seed(artifact.path("seed").asLong())

@@ -45,4 +45,6 @@ docker-compose.override.yml
 *.sqlite
 *.db
 
+# 忽略敏感数据配置文件
+application-*.yml
 

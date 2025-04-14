@@ -1,67 +1,58 @@
+server:
+  port: 8080
+
 spring:
   application:
     name: backend
-
-  datasource:
-    # 数据源配置
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    # 数据库连接地址
-    url: jdbc:mysql://47.121.181.198:3307/vision_wear?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
-    # 数据库用户名
-    username: root
-    password: 123456
-
+  profiles:
+    active: dev
   servlet:
     multipart:
-      # 文件上传配置
       max-file-size: 10MB
       max-request-size: 20MB
+  datasource:
+    driver-class-name: ${vision.datasource.driver-class-name}
+    url: jdbc:mysql://${vision.datasource.host}:${vision.datasource.port}/${vision.datasource.database}?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+    username: ${vision.datasource.username}
+    password: ${vision.datasource.password}
 
 mybatis-plus:
   configuration:
-    map-underscore-to-camel-case: true  # 自动驼峰命名转换
-  mapper-locations: classpath*:/mapper/**/*.xml  # XML 映射文件路径
+    map-underscore-to-camel-case: true
+  mapper-locations: classpath*:/mapper/**/*.xml
 
 springdoc:
   api-docs:
-    # OpenAPI 文档路径
     path: /v3/api-docs
   swagger-ui:
-    # Swagger UI 页面路径
     path: /swagger-ui.html
+
 knife4j:
-  # 启用 Knife4j
   enable: true
-  # 开发环境下设置为 false
   production: false
 
 logging:
   level:
     com:
       wtu:
-        # 日志级别
         mapper: debug
         service: info
         controller: info
 
 vision:
   jwt:
-    # 设置jwt签名加密时使用的秘钥
-    secretKey: WTU
-    # 设置jwt过期时间
-    ttl: 10800000
-    # 设置前端传递过来的令牌名称
-    tokenName: token
-
+    secretKey: ${vision.jwt.secret-key}
+    ttl: ${vision.jwt.ttl}
+    tokenName: ${vision.jwt.token-name}
   api:
-      #设置stable APikey
-    key: sk-q135SxJ1N1QYhInKZRopMCxudXQS0THxwC1Y7rHKPBqsqxSz
-      #设置请求路径
-    url: https://api.stability.ai/v1
-      #设置超时时间
-    timeout: 60000
+    key: ${vision.api.secret-key}
+    url: ${vision.api.url}
+    timeout: ${vision.api.timeout}
+  maxSize: 10485760
 
-    storagePath: ./images
-
-    maxSize: 10485760
-
+wtu:
+  alioss:
+    endpoint: ${vision.alioss.endpoint}
+    access-key-id: ${vision.alioss.access-key-id}
+    access-key-secret: ${vision.alioss.access-key-secret}
+    bucket-name: ${vision.alioss.bucket-name}

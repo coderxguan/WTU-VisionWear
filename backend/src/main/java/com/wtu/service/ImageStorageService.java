@@ -14,6 +14,11 @@ public interface ImageStorageService {
 
     String saveBase64Image(String base64Image);
 
-    @Cacheable(value = "images", key = "#imageId")
-    byte[] getImage(String imageId);
+    /**
+     * 获取图像URL
+     *
+     * @param imageId 图像ID
+     * @return 图像URL
+     */
+    public String getImageUrl(String imageId);
 }

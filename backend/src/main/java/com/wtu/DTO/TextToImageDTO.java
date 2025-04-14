@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ImageGenerationRequest {
+public class TextToImageDTO {
     @NotBlank(message = "提示文本不能为空")
     @Size(min = 3, max = 1000, message = "提示文本长度必须在3到1000个字符之间")
     private String prompt;
