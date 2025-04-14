@@ -14,7 +14,7 @@ import StyleTransferPage from '../views/StyleTransferPage.vue'
 import StyleExtensionPage from '../views/StyleExtensionPage.vue'
 import IntroPage from "../views/IntroPage.vue";
 import {ElMessage} from "element-plus";
-
+import { getValidToken } from '../utils/auth' // 注意路径是否正确
 const routes = [
 
     { path: '/', component: IntroPage, name: 'Intro' }, // 访问根路径时显示介绍页
@@ -50,7 +50,7 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
     console.log('进入守卫，目标路径：', to.fullPath);
 
-    const token = localStorage.getItem('token');
+    const token = getValidToken();
     const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
 
     console.log('是否需要登录校验：', requiresAuth, '当前 token：', token);

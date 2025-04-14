@@ -181,8 +181,14 @@ const handleLogin = async () => {
     if (response.data && response.data.code === 1 && response.data.data) {
       // 登录成功，保存 token 和其他信息
       const {token, userName, userId} = response.data.data
+
       if (token) {
-        localStorage.setItem('token', token) // 保存 token
+        const expireTime = Date.now() + 2 * 60 * 60 * 1000 // 当前时间 + 2 小时
+        localStorage.setItem('token', JSON.stringify({
+          value: token,
+          expire: expireTime
+        }))
+
         localStorage.setItem('userName', userName) // 保存用户名
         localStorage.setItem('userId', userId) // 保存用户ID
 
