@@ -13,15 +13,16 @@ import PartialRedrawPage from '../views/PartialRedrawPage.vue'
 import StyleTransferPage from '../views/StyleTransferPage.vue'
 import StyleExtensionPage from '../views/StyleExtensionPage.vue'
 import IntroPage from "../views/IntroPage.vue";
+import {ElMessage} from "element-plus";
 
 const routes = [
 
-    { path: '/', component: IntroPage, name: 'Intro' }, // 访问根路径时显示介绍页面
-    { path: '/home', component: HomePage, name: 'Home' },
+    { path: '/', component: IntroPage, name: 'Intro' }, // 访问根路径时显示介绍页
     { path: '/:pathMatch(.*)*', redirect: '/' }, // 捕获所有未知路径，重定向到介绍页面
     { 
       path: '/home', 
-      component: HomePage, 
+      component: HomePage,
+        meta: { requiresAuth: true },
       name: 'Home',
       children: [
         { path: '', component: RenderPage }, // 默认子页面
@@ -45,5 +46,30 @@ const router = createRouter({
     history: createWebHistory(),
     routes,
 });
+
+router.beforeEach((to, from, next) => {
+    console.log('进入守卫，目标路径：', to.fullPath);
+
+    const token = localStorage.getItem('token');
+    const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+
+    console.log('是否需要登录校验：', requiresAuth, '当前 token：', token);
+
+    if (requiresAuth) {
+        if (token) {
+            console.log('有 token，放行');
+            next();
+        } else {
+            console.log('无 token，跳转 /');
+            ElMessage.warning('请先登录');
+            next('/');
+        }
+    } else {
+        console.log('不需要登录，直接放行');
+        next();
+    }
+});
+
+
 
 export default router;
