@@ -5,9 +5,11 @@ import com.wtu.VO.TextToImageVO;
 import com.wtu.result.Result;
 import com.wtu.service.ImageStorageService;
 import com.wtu.service.UserService;
+import com.wtu.utils.UserContext;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +29,12 @@ public class UserController {
     private ImageStorageService imageStorageService;
     @PostMapping("/Image/generate")
     @Operation(summary = "调用API文生图功能")//返回结果为base64编码集
-    public Result<List<String>> textToImage(@RequestBody @Validated TextToImageDTO request) throws Exception {
+    public Result<List<String>> textToImage(@RequestBody @Validated TextToImageDTO request,
+                                            HttpServletRequest httpServletRequest) throws Exception {
+
+        //从token 获取当前用户ID
+        Long userId = UserContext.getCurrentUserId(httpServletRequest);
+        log.info("当前用户 ID: {}", userId);
 
         log.info("收到图像生成请求: {}", request);
 

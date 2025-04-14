@@ -33,6 +33,9 @@ public class JwtTokenInterceptor implements HandlerInterceptor {
             Claims claims = JwtUtil.parseJwt(jwtProperties.getSecretKey(), token);
             log.info("检验token: {}",token);
             log.info("检验封装数据:{}",claims.toString());
+
+            Object userId = claims.get("userId");
+            request.setAttribute("userId", userId); // 存入作用域
         } catch (Exception e) {
             //token不存在相应claims，则报错,响应码变成401
             response.setStatus(401);
