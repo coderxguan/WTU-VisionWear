@@ -78,8 +78,8 @@ const generateImageId = async () => {
     // axios已经会帮我们解析JSON，不需要手动解析
     const result = response.data
 
-    // 检查响应结构
-    if (result.code !== 0) {
+    // 检查响应结构，注意是code=1成功
+    if (result.code !== 1) {
       throw new Error(result.msg || '服务器返回错误码')
     }
 
@@ -132,8 +132,8 @@ const getImageUrl = async (id) => {
     console.log('获取图片URL响应:', response.data)
 
     const imageResult = response.data
-
-    if (imageResult.code !== 0 || !imageResult.data) {
+    //注意这里是code等于1成功
+    if (imageResult.code !== 1 || !imageResult.data) {
       throw new Error(imageResult.msg || '获取图片链接失败，请稍后重试')
     }
 
