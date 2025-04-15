@@ -38,7 +38,7 @@ public class UserController {
 
         log.info("收到图像生成请求: {}", request);
 
-        TextToImageVO response = userService.textToimage(request);
+        TextToImageVO response = userService.textToImage(request, userId);
 
         List<String > ids=new ArrayList<>();
 
@@ -64,6 +64,5 @@ public class UserController {
 
         return Result.success(imageUrl);
     }
-
 
 }

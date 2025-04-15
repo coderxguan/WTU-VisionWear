@@ -1,5 +1,7 @@
 package com.wtu.service.impl;
 
+import com.wtu.entity.Image;
+import com.wtu.mapper.ImageMapper;
 import com.wtu.service.ImageStorageService;
 import com.wtu.utils.AliOssUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -8,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Map;
 import java.util.UUID;
@@ -21,6 +24,9 @@ public class ImageStorageServiceImpl implements ImageStorageService {
     @Autowired
     private AliOssUtil aliOssUtil;
 
+    @Autowired
+    private ImageMapper imageMapper;  // 确保已注入
+
     // 缓存imageId与OSS URL的映射关系
     private final Map<String, String> imageUrlCache = new ConcurrentHashMap<>();
 
@@ -29,7 +35,8 @@ public class ImageStorageServiceImpl implements ImageStorageService {
      * @param base64Image Base64编码的图像数据
      * @return 生成的图像ID
      */
-    public String saveBase64Image(String base64Image) {
+    @Override
+    public String saveBase64Image(String base64Image, Long userId) {
         try {
             // 生成唯一文件名
             String imageId = UUID.randomUUID().toString();
@@ -44,12 +51,28 @@ public class ImageStorageServiceImpl implements ImageStorageService {
             // 缓存图像URL
             imageUrlCache.put(imageId, imageUrl);
 
-            log.debug("图像已保存到OSS: {}, URL: {}", imageId, imageUrl);
+            // 插入数据库记录（包含 userId）
+            Image image = Image.builder()
+                    .imageId(imageId)
+                    .userId(userId)
+                    .imageUrl(imageUrl)
+                    .createTime(LocalDateTime.now())
+                    .status(0)
+                    .build();
+            imageMapper.insert(image);
+
+            log.info("图片保存成功: imageId={}, userId={}", imageId, userId);
             return imageId;
+
         } catch (Exception e) {
             log.error("保存图像到OSS失败", e);
             throw new RuntimeException("保存图像到OSS失败", e);
         }
+    }
+
+    @Override
+    public String saveBase64Image(String base64Image) {
+        return "";
     }
 
     /**

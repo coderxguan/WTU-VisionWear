@@ -40,7 +40,7 @@ public class UserServiceImpl implements UserService {
      * @return 图像生成响应
      */
     @Override
-    public TextToImageVO textToimage(TextToImageDTO request) throws Exception {
+    public TextToImageVO textToImage(TextToImageDTO request, Long userId) throws Exception {
         long startTime = System.currentTimeMillis();
         String requestId = UUID.randomUUID().toString();
         log.info("开始图像生成请求: {}, 提示: {}", requestId, request.getPrompt());
@@ -72,7 +72,7 @@ public class UserServiceImpl implements UserService {
 
             // 解析响应
             JsonNode responseJson = objectMapper.readTree(responseBody);
-            List<TextToImageVO.GeneratedImage> generatedImages = parseResponse(responseJson);
+            List<TextToImageVO.GeneratedImage> generatedImages = parseResponse(responseJson, userId);
 
             long duration = System.currentTimeMillis() - startTime;
             log.info("图像生成完成: {}, 耗时: {}ms", requestId, duration);
@@ -130,7 +130,7 @@ public class UserServiceImpl implements UserService {
         return requestBody;
     }
 
-    private List<TextToImageVO.GeneratedImage> parseResponse(JsonNode responseJson) {
+    private List<TextToImageVO.GeneratedImage> parseResponse(JsonNode responseJson, Long userId) {
         List<TextToImageVO.GeneratedImage> images = new ArrayList<>();
 
         JsonNode artifacts = responseJson.path("artifacts");
@@ -139,7 +139,7 @@ public class UserServiceImpl implements UserService {
                 String base64Image = artifact.path("base64").asText();
 
                 // 保存图像到OSS并获取ID
-                String imageId = imageStorageService.saveBase64Image(base64Image);
+                String imageId = imageStorageService.saveBase64Image(base64Image, userId);
 
                 // 获取OSS访问URL
                 String imageUrl = imageStorageService.getImageUrl(imageId);

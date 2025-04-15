@@ -21,4 +21,5 @@ public interface ImageStorageService {
      * @return 图像URL
      */
     public String getImageUrl(String imageId);
+    String saveBase64Image(String base64Image, Long userId); // 添加 userId 参数
 }
