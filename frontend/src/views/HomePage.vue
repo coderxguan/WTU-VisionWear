@@ -22,7 +22,7 @@
             :class="{ active: activeFunction === '选项1' }"
             @click="selectMenu('选项1')"
         >
-          图灵绘境
+          选项1
         </router-link>
 
         <router-link
@@ -44,7 +44,7 @@
         </router-link>
       </div>
 
-      <ul class="function-list">
+      <ul class="funktion-list">
         <router-link
             to="/home/sketch"
             class="menu-item el-menu-item"
@@ -103,6 +103,24 @@
         </div>
         <userIconArea></userIconArea>
       </header>
+
+      <!-- 搜索栏 -->
+      <div class="search-bar">
+        <el-input
+            v-model="searchText"
+            placeholder="请输入关键词..."
+            clearable
+            class="search-input"
+        >
+          <template #prefix>
+            <el-icon><Search /></el-icon>
+          </template>
+          <template #append>
+            <el-button type="primary">提交</el-button>
+          </template>
+        </el-input>
+      </div>
+
       <!-- 展示图像区域 -->
       <router-view class="page-view" />
     </main>
@@ -407,7 +425,7 @@ export default {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
 }
 
-.function-list {
+.funktion-list {
   list-style-type: none;
   padding: 0;
   margin: 20px 0 0 0;

@@ -208,6 +208,7 @@ import { ElMessage, ElNotification } from 'element-plus'
 import { Picture, Loading, Download, CopyDocument } from '@element-plus/icons-vue'
 import {getValidToken} from "../utils/auth.js";
 import axios from 'axios'
+import request from "../main.js";
 
 // 表单引用
 const formRef = ref(null)
@@ -263,16 +264,11 @@ const generateImageId = async () => {
     console.log('请求参数:', requestBody)
 
     // 发送请求
-    const response = await axios({
+    const response = await request({
       method: 'post',
       url: '/user/image/generate',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'token': token
-      },
       data: requestBody
-    })
+    });
 
     console.log('响应状态:', response.status)
     console.log('响应数据:', response.data)
@@ -319,14 +315,10 @@ const getImageUrl = async (id) => {
     console.log('获取图片URL，图片ID:', id)
 
     // 使用axios发送请求
-    const response = await axios({
+    const response = await request({
       method: 'get',
-      url: `/user/images/${id}`,
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'token': token
-      }
-    })
+      url: `/user/images/${id}`
+    });
 
     console.log('获取图片URL响应:', response.data)
 
