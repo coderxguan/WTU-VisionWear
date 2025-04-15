@@ -2,6 +2,8 @@ package com.wtu.service;
 
 import org.springframework.cache.annotation.Cacheable;
 
+import java.util.List;
+
 /**
  * Created with IntelliJ IDEA.
  *
@@ -11,15 +13,28 @@ import org.springframework.cache.annotation.Cacheable;
  */
 public interface ImageStorageService {
 
-
-    String saveBase64Image(String base64Image);
-
     /**
      * 获取图像URL
      *
      * @param imageId 图像ID
      * @return 图像URL
      */
-    public String getImageUrl(String imageId);
+    String getImageUrl(String imageId);
+
+    /**
+     * 保存Base64编码的图像到阿里云OSS
+     *
+     * @param base64Image Base64编码的图像数据
+     * @param userId 用户ID
+     * @return 生成的图像ID
+     */
     String saveBase64Image(String base64Image, Long userId); // 添加 userId 参数
+
+    /**
+     * 获取所有图像URL
+     *
+     * @param userId 用户ID
+     * @return 图像URL列表
+     */
+    List<String> getAllImageUrls(Long userId);
 }

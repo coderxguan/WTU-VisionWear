@@ -11,10 +11,11 @@ CREATE TABLE `user` (
                         `api_key` VARCHAR(255) COMMENT '用户midjourney密钥'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户类型实体';
 
-CREATE TABLE `user_image` (
-                              `image_id` BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '图片唯一ID',
-                              `user_id` BIGINT NOT NULL COMMENT '关联的用户ID',
-                              `image_url` VARCHAR(255) NOT NULL COMMENT '图片链接或路径',
-                              `created_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '图片创建时间',
-                              FOREIGN KEY (`user_id`) REFERENCES `user`(`user_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户图片记录表';
+CREATE TABLE image (
+                      image_id VARCHAR(36) PRIMARY KEY COMMENT '图片唯一ID',
+                      user_id BIGINT NOT NULL COMMENT '关联用户ID',
+                      image_url VARCHAR(255) NOT NULL COMMENT '图片OSS访问URL',
+                      create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+                      status TINYINT NOT NULL DEFAULT 0 COMMENT '状态（0-正常，1-已删除）',
+                      FOREIGN KEY (user_id) REFERENCES user(user_id)
+) COMMENT='图片存储表';

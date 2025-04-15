@@ -65,4 +65,20 @@ public class UserController {
         return Result.success(imageUrl);
     }
 
+    @GetMapping(value="/getAllImage")
+    @Operation(summary = "获取用户生成的所有图片URL")
+    public Result<List<String>> getAllImage(HttpServletRequest httpServletRequest) {
+        //从token 获取当前用户ID
+        Long userId = UserContext.getCurrentUserId(httpServletRequest);
+        log.info("当前用户 ID: {}", userId);
+
+        List<String> imageUrls = imageStorageService.getAllImageUrls(userId);
+
+        if (imageUrls == null || imageUrls.isEmpty()) {
+            return Result.error("没有找到图片!");
+        }
+
+        return Result.success(imageUrls);
+    }
+
 }

@@ -1,5 +1,6 @@
 package com.wtu.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.wtu.entity.Image;
 import com.wtu.mapper.ImageMapper;
 import com.wtu.service.ImageStorageService;
@@ -11,9 +12,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Base64;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
@@ -71,8 +70,25 @@ public class ImageStorageServiceImpl implements ImageStorageService {
     }
 
     @Override
-    public String saveBase64Image(String base64Image) {
-        return "";
+    public List<String> getAllImageUrls(Long userId) {
+        List<String> imageUrls = new ArrayList<>();
+        // 从数据库中查询用户的所有图像记录
+        LambdaQueryWrapper<Image> wrapper = new LambdaQueryWrapper<>();
+        // 添加查询条件 最新的图像在前
+        wrapper.eq(Image::getUserId, userId)
+                .orderByDesc(Image::getCreateTime);
+        List<Image> images = imageMapper.selectList(wrapper);
+        log.info("查询到的图像记录: {}", images);
+        // 遍历图像记录，获取图像URL
+        for (Image image : images) {
+            String imageUrl = image.getImageUrl();
+            if (imageUrl != null) {
+                imageUrls.add(imageUrl);
+            }
+        }
+        log.info("用户 {} 的所有图像URL: {}", userId, imageUrls);
+
+        return imageUrls;
     }
 
     /**
