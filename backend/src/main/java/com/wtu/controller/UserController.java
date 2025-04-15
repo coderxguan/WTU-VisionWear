@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/api/user")
 @Tag(name = "用户模块")
 @Slf4j
 
@@ -27,7 +27,7 @@ public class UserController {
     private UserService userService;
     @Resource
     private ImageStorageService imageStorageService;
-    @PostMapping("/Image/generate")
+    @PostMapping("/image/generate")
     @Operation(summary = "调用API文生图功能")//返回结果为base64编码集
     public Result<List<String>> textToImage(@RequestBody @Validated TextToImageDTO request,
                                             HttpServletRequest httpServletRequest) throws Exception {
@@ -42,7 +42,7 @@ public class UserController {
 
         List<String > ids=new ArrayList<>();
 
-        //对返回结果中存放imageid的集合迭代循环
+        //对返回结果中存放imageId的集合迭代循环
         for (TextToImageVO.GeneratedImage image : response.getImages()) {
             String imageId = image.getImageId();
             ids.add(imageId);
@@ -52,7 +52,7 @@ public class UserController {
     }
 
     @GetMapping(value = "/images/{imageId}")
-    @Operation(summary = "通过imageid获取图片URL")
+    @Operation(summary = "通过imageId获取图片URL")
     public Result<String> getImage(@PathVariable String imageId) {
         log.info("获取图像URL: {}", imageId);
 
