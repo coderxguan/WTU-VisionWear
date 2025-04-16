@@ -22,7 +22,7 @@
             :class="{ active: activeFunction === '选项1' }"
             @click="selectMenu('选项1')"
         >
-          选项1
+          图灵绘境
         </router-link>
 
         <router-link
@@ -44,7 +44,7 @@
         </router-link>
       </div>
 
-      <ul class="funktion-list">
+      <ul class="function-list">
         <router-link
             to="/home/sketch"
             class="menu-item el-menu-item"
@@ -103,23 +103,6 @@
         </div>
         <userIconArea></userIconArea>
       </header>
-
-      <!-- 搜索栏 -->
-      <div class="search-bar">
-        <el-input
-            v-model="searchText"
-            placeholder="请输入关键词..."
-            clearable
-            class="search-input"
-        >
-          <template #prefix>
-            <el-icon><Search /></el-icon>
-          </template>
-          <template #append>
-            <el-button type="primary">提交</el-button>
-          </template>
-        </el-input>
-      </div>
 
       <!-- 展示图像区域 -->
       <router-view class="page-view" />
@@ -359,57 +342,6 @@ export default {
   transform: scale(1.1);
 }
 
-.search-bar {
-  padding: 20px 28px;
-  background-color: transparent;
-  margin-top: 10px;
-}
-
-.search-input {
-  width: 100%;
-  max-width: 800px;
-}
-
-.search-input :deep(.el-input__wrapper) {
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
-  border-radius: 12px;
-  padding: 2px 16px;
-  border: 1px solid rgba(230, 230, 230, 0.5);
-  transition: all 0.3s ease;
-}
-
-.search-input :deep(.el-input__wrapper:hover) {
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-  transform: translateY(-1px);
-}
-
-.search-input :deep(.el-input__inner) {
-  height: 48px;
-  font-size: 15px;
-}
-
-.search-input :deep(.el-input-group__append) {
-  background: linear-gradient(90deg, #6a98e9, #77cdf3);
-  border-radius: 0 12px 12px 0;
-  overflow: hidden;
-}
-
-.search-input :deep(.el-input-group__append .el-button) {
-  border: none;
-  color: white;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  padding: 12px 28px;
-  font-size: 15px;
-  height: 100%;
-  letter-spacing: 0.5px;
-}
-
-.search-input :deep(.el-input-group__append .el-button:hover) {
-  background-color: rgba(255, 255, 255, 0.1);
-  transform: scale(1.02);
-}
-
 .page-view {
   flex: 1;
   padding: 28px;
@@ -425,7 +357,7 @@ export default {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
 }
 
-.funktion-list {
+.function-list {
   list-style-type: none;
   padding: 0;
   margin: 20px 0 0 0;

@@ -209,7 +209,7 @@ const handleLogin = async () => {
           showClose: true,
           center: true
         })
-        router.push({name: 'Home'})
+        await router.push({name: 'Home'})
       } else {
         ElMessage.error('返回的 token 不存在')
       }

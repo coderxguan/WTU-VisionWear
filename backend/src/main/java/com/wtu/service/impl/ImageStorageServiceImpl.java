@@ -76,7 +76,8 @@ public class ImageStorageServiceImpl implements ImageStorageService {
         LambdaQueryWrapper<Image> wrapper = new LambdaQueryWrapper<>();
         // 添加查询条件 最新的图像在前
         wrapper.eq(Image::getUserId, userId)
-                .orderByDesc(Image::getCreateTime);
+                .orderByDesc(Image::getCreateTime)
+                .eq(Image::getStatus, 0); // 只查询状态为0的图像
         List<Image> images = imageMapper.selectList(wrapper);
         log.info("查询到的图像记录: {}", images);
         // 遍历图像记录，获取图像URL

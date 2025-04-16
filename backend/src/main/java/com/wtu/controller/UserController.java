@@ -70,7 +70,6 @@ public class UserController {
     public Result<List<String>> getAllImage(HttpServletRequest httpServletRequest) {
         //从token 获取当前用户ID
         Long userId = UserContext.getCurrentUserId(httpServletRequest);
-        log.info("当前用户 ID: {}", userId);
 
         List<String> imageUrls = imageStorageService.getAllImageUrls(userId);
 
