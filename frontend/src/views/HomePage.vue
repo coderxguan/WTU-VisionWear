@@ -296,7 +296,9 @@ export default {
 }
 
 .header {
-  height: 64px;
+  height: 64px !important; /* Force the height to stay consistent */
+  min-height: 64px;        /* Add min-height as backup */
+  max-height: 64px;        /* Prevent expansion */
   background: linear-gradient(90deg, #6a98e9, #77cdf3);
   padding: 0 24px;
   display: flex;

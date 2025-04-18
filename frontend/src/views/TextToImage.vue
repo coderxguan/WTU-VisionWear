@@ -421,7 +421,9 @@ onMounted(() => {
 
 <style scoped>
 .text-to-image-container {
-  width: 100%;
+  padding: 0 10px 0 10px;
+  margin-left: 10px;
+  width: 96%;
   display: flex;
   flex-direction: column;
 }
@@ -435,9 +437,8 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 0 16px 0;
   border-bottom: 1px solid rgba(106, 152, 233, 0.15);
-  margin-bottom: 20px;
+  margin-bottom: 5px;
 }
 
 .card-header h2 {
