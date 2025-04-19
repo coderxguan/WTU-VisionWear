@@ -23,12 +23,12 @@ import java.util.List;
 @RequestMapping("/api/user")
 @Tag(name = "用户模块")
 @Slf4j
-
 public class UserController {
     @Resource
     private UserService userService;
     @Resource
     private ImageStorageService imageStorageService;
+
     @PostMapping("/image/generate")
     @Operation(summary = "调用API文生图功能")
     public Result<List<String>> textToImage(@RequestBody @Validated TextToImageDTO request,
@@ -42,7 +42,7 @@ public class UserController {
 
         TextToImageVO response = userService.textToImage(request, userId);
 
-        List<String > ids=new ArrayList<>();
+        List<String> ids = new ArrayList<>();
 
         //对返回结果中存放imageId的集合迭代循环
         for (TextToImageVO.GeneratedImage image : response.getImages()) {
@@ -67,7 +67,7 @@ public class UserController {
         return Result.success(imageUrl);
     }
 
-    @GetMapping(value="/getAllImage")
+    @GetMapping(value = "/getAllImage")
     @Operation(summary = "获取用户生成的所有图片URL")
     public Result<List<String>> getAllImage(HttpServletRequest httpServletRequest) {
         //从token 获取当前用户ID
@@ -82,14 +82,59 @@ public class UserController {
         return Result.success(imageUrls);
     }
 
-    @PostMapping("/image/image-to-image")
+    @PostMapping("/image-to-image")
     @Operation(summary = "以图生图")
-    public Result<ImageToImageVO> imageToImage(@RequestBody ImageToImageDTO request, @RequestParam Long userId) {
+    public Result<List<String>> imageToImage(@RequestBody ImageToImageDTO request,
+                                             HttpServletRequest httpServletRequest) {
         try {
-            ImageToImageVO result = userService.imageToImage(request, userId);
-            return Result.success(result);
+            //从token 获取当前用户ID
+            Long userId = UserContext.getCurrentUserId(httpServletRequest);
+            log.info("当前用户 ID: {}", userId);
+
+            // 参数验证
+            if (request.getSourceImageId() == null || request.getSourceImageId().isEmpty()) {
+                return Result.error("源图像ID不能为空");
+            }
+            if (request.getPrompt() == null || request.getPrompt().isEmpty()) {
+                return Result.error("提示词不能为空");
+            }
+            if (request.getImageStrength() < 0 || request.getImageStrength() > 1) {
+                return Result.error("图像强度必须在0到1之间");
+            }
+
+            // 确保参数在合理范围内
+            if (request.getCfgScale() < 0) {
+                request.setCfgScale(7.0f); // 使用默认值
+            }
+            if (request.getSteps() < 10 || request.getSteps() > 150) {
+                request.setSteps(30); // 使用默认步数
+            }
+            if (request.getSamples() < 1) {
+                request.setSamples(1); // This 至少生成一张图片
+            }
+
+            log.info("开始处理以图生图请求: sourceImageId={}, prompt={}, imageStrength={}",
+                    request.getSourceImageId(), request.getPrompt(), request.getImageStrength());
+
+            ImageToImageVO response = userService.imageToImage(request, userId);
+
+            List<String> ids = new ArrayList<>();
+
+            //对返回结果中存放imageId的集合迭代循环
+            for (ImageToImageVO.GeneratedImage image : response.getImages()) {
+                String imageId = image.getImageId();
+                ids.add(imageId);
+            }
+
+            log.info("以图生图处理成功: 生成了{}张图片", ids.size());
+            return Result.success(ids);
         } catch (Exception e) {
             log.error("以图生图失败", e);
+            // 提供更详细的错误信息
+            String errorMessage = e.getMessage();
+            if (errorMessage != null && errorMessage.contains("520")) {
+                return Result.error("调用Stable Diffusion API时发生服务器错误(520)，请检查API配置和请求参数");
+            }
             return Result.error("以图生图失败: " + e.getMessage());
         }
     }
