@@ -1,6 +1,8 @@
 package com.wtu.controller;
 
+import com.wtu.DTO.ImageToImageDTO;
 import com.wtu.DTO.TextToImageDTO;
+import com.wtu.VO.ImageToImageVO;
 import com.wtu.VO.TextToImageVO;
 import com.wtu.result.Result;
 import com.wtu.service.ImageStorageService;
@@ -28,7 +30,7 @@ public class UserController {
     @Resource
     private ImageStorageService imageStorageService;
     @PostMapping("/image/generate")
-    @Operation(summary = "调用API文生图功能")//返回结果为base64编码集
+    @Operation(summary = "调用API文生图功能")
     public Result<List<String>> textToImage(@RequestBody @Validated TextToImageDTO request,
                                             HttpServletRequest httpServletRequest) throws Exception {
 
@@ -80,4 +82,15 @@ public class UserController {
         return Result.success(imageUrls);
     }
 
+    @PostMapping("/image/image-to-image")
+    @Operation(summary = "以图生图")
+    public Result<ImageToImageVO> imageToImage(@RequestBody ImageToImageDTO request, @RequestParam Long userId) {
+        try {
+            ImageToImageVO result = userService.imageToImage(request, userId);
+            return Result.success(result);
+        } catch (Exception e) {
+            log.error("以图生图失败", e);
+            return Result.error("以图生图失败: " + e.getMessage());
+        }
+    }
 }

@@ -23,6 +23,7 @@ public class TextToImageVO {
     @Data
     @Builder
     public static class GeneratedImage {
+
         private String imageId;
         // 可以移除base64Image字段，减少传输数据量
         // private String base64Image;
