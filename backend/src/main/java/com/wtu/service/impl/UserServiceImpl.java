@@ -11,6 +11,9 @@ import com.wtu.VO.TextToImageVO;
 import com.wtu.config.StableDiffusionConfig;
 import com.wtu.service.ImageStorageService;
 import com.wtu.service.UserService;
+import com.wtu.utils.TransApi;
+import org.springframework.beans.factory.annotation.Value;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
@@ -42,6 +45,38 @@ public class UserServiceImpl implements UserService {
     private final ObjectMapper objectMapper;
     private final ImageStorageService imageStorageService;
 
+
+    // 新增需要手动构造的依赖
+    private TransApi transApi;
+
+    // 新增的配置参数注入
+    @Value("${vision.translate.appid}")
+    private String appId;
+
+    @Value("${vision.translate.security-key}")
+    private String securityKey;
+
+    // 使用 @PostConstruct 初始化特殊依赖
+    @PostConstruct
+    public void init() {
+        this.transApi = new TransApi(appId, securityKey);
+    }
+
+    // 翻译逻辑
+    private String translateToEnglish(String text) {
+        try {
+            String result = transApi.getTransResult(text, "zh", "en");
+            JsonNode jsonNode = objectMapper.readTree(result);
+            JsonNode transResult = jsonNode.path("trans_result");
+            if (transResult.isArray() && transResult.size() > 0) {
+                return transResult.get(0).path("dst").asText(text); // 失败返回原文
+            }
+            return text;
+        } catch (Exception e) {
+            log.error("翻译失败，使用原文本", e);
+            return text;
+        }
+    }
     /**
      * 根据提示生成图像
      * @param request 图像生成请求
@@ -50,6 +85,17 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public TextToImageVO textToImage(TextToImageDTO request, Long userId) throws Exception {
+        // 添加翻译逻辑------------------------------------------------
+        String originalPrompt = request.getPrompt();
+        String translatedPrompt = translateToEnglish(originalPrompt);
+        request.setPrompt(translatedPrompt);
+
+        if (request.getNegativePrompt() != null && !request.getNegativePrompt().isEmpty()) {
+            String translatedNegative = translateToEnglish(request.getNegativePrompt());
+            request.setNegativePrompt(translatedNegative);
+        }
+        // -----------------------------------------------------------
+
         // 保持原来的textToImage方法实现不变
         long startTime = System.currentTimeMillis();
         String requestId = UUID.randomUUID().toString();
@@ -107,6 +153,18 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ImageToImageVO imageToImage(ImageToImageDTO request, Long userId) throws Exception {
+
+        // 添加翻译逻辑------------------------------------------------
+        String originalPrompt = request.getPrompt();
+        String translatedPrompt = translateToEnglish(originalPrompt);
+        request.setPrompt(translatedPrompt);
+
+        if (request.getNegativePrompt() != null && !request.getNegativePrompt().isEmpty()) {
+            String translatedNegative = translateToEnglish(request.getNegativePrompt());
+            request.setNegativePrompt(translatedNegative);
+        }
+        // -----------------------------------------------------------
+
         long startTime = System.currentTimeMillis();
         String requestId = UUID.randomUUID().toString();
         log.info("开始以图生图请求: {}, 源图像ID: {}, 提示: {}", requestId, request.getSourceImageId(), request.getPrompt());
