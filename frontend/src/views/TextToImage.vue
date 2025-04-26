@@ -265,7 +265,7 @@ const generateImageId = async () => {
     // 发送请求
     const response = await request({
       method: 'post',
-      url: '/user/image/generate',
+      url: '/image/text-to-image',
       data: requestBody
     });
 
@@ -316,7 +316,7 @@ const getImageUrl = async (id) => {
     // 使用axios发送请求
     const response = await request({
       method: 'get',
-      url: `/user/images/${id}`
+      url: `/image/get-image/${id}`
     });
 
     console.log('获取图片URL响应:', response.data)

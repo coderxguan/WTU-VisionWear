@@ -5,52 +5,34 @@ import com.wtu.entity.Image;
 import com.wtu.mapper.ImageMapper;
 import com.wtu.service.ImageStorageService;
 import com.wtu.utils.AliOssUtil;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 @Slf4j
 public class ImageStorageServiceImpl implements ImageStorageService {
 
+    // IOC 注入
+    private final AliOssUtil aliOssUtil;
+    private final ImageMapper imageMapper;
 
-    @Autowired
-    private AliOssUtil aliOssUtil;
-
-    @Autowired
-    private ImageMapper imageMapper;  // 确保已注入
-
-    // 缓存imageId与OSS URL的映射关系
-    private final Map<String, String> imageUrlCache = new ConcurrentHashMap<>();
-
-    /**
-     * 保存Base64编码的图像到阿里云OSS
-     * @param base64Image Base64编码的图像数据
-     * @return 生成的图像ID
-     */
     @Override
     public String saveBase64Image(String base64Image, Long userId) {
         try {
-            // 生成唯一文件名
             String imageId = UUID.randomUUID().toString();
             String objectName = imageId + ".png";
 
-            // 解码Base64图像
+            // 解码并上传到OSS
             byte[] imageBytes = Base64.getDecoder().decode(base64Image);
-
-            // 上传到OSS并获取访问URL
             String imageUrl = aliOssUtil.upload(imageBytes, objectName);
 
-            // 缓存图像URL
-            imageUrlCache.put(imageId, imageUrl);
-
-            // 插入数据库记录（包含 userId）
+            // 插入数据库记录
             Image image = Image.builder()
                     .imageId(imageId)
                     .userId(userId)
@@ -70,48 +52,9 @@ public class ImageStorageServiceImpl implements ImageStorageService {
     }
 
     @Override
-    public List<String> getAllImageUrls(Long userId) {
-        List<String> imageUrls = new ArrayList<>();
-        // 从数据库中查询用户的所有图像记录
-        LambdaQueryWrapper<Image> wrapper = new LambdaQueryWrapper<>();
-        // 添加查询条件 最新的图像在前
-        wrapper.eq(Image::getUserId, userId)
-                .orderByDesc(Image::getCreateTime)
-                .eq(Image::getStatus, 0); // 只查询状态为0的图像
-        List<Image> images = imageMapper.selectList(wrapper);
-        log.info("查询到的图像记录: {}", images);
-        // 遍历图像记录，获取图像URL
-        for (Image image : images) {
-            String imageUrl = image.getImageUrl();
-            if (imageUrl != null) {
-                imageUrls.add(imageUrl);
-            }
-        }
-        log.info("用户 {} 的所有图像URL: {}", userId, imageUrls);
-
-        return imageUrls;
-    }
-
-    /**
-     * 获取图像URL
-     * @param imageId 图像ID
-     * @return 图像的OSS访问URL
-     */
     public String getImageUrl(String imageId) {
-        // 先从缓存获取
-        String cachedUrl = imageUrlCache.get(imageId);
-        if (cachedUrl != null) {
-            return cachedUrl;
-        }
-
-        // 如果缓存中没有，则构建URL
-        // 文件访问路径规则 https://BucketName.Endpoint/ObjectName
+        // 直接构建并返回URL
         String objectName = imageId + ".png";
-        String imageUrl = aliOssUtil.getAccessUrl(objectName);
-
-        // 加入缓存
-        imageUrlCache.put(imageId, imageUrl);
-
-        return imageUrl;
+        return aliOssUtil.getAccessUrl(objectName);
     }
 }

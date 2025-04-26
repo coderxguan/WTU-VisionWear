@@ -11,7 +11,7 @@ import com.wtu.mapper.UserMapper;
 import com.wtu.properties.JwtProperties;
 import com.wtu.service.AuthService;
 import com.wtu.utils.JwtUtil;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -19,13 +19,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
-    @Autowired
-    private UserMapper userMapper;
-
-    @Autowired
-    private JwtProperties jwtProperties;
+    // IOC 注入
+    private final UserMapper userMapper;
+    private final JwtProperties jwtProperties;
 
     @Override
     public String register(RegisterDTO dto) {
@@ -44,12 +43,12 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // 保存用户
-        User user = new User();
-        user.setUserName(dto.getUsername());
-        user.setEmail(dto.getEmail());
-        user.setStatus(0);
-        // 密码加密
-        user.setPassWord(DigestUtil.md5Hex(dto.getPassword()));
+        User user = User.builder()
+                .userName(dto.getUsername())
+                .email(dto.getEmail())
+                .status(0)
+                .passWord(DigestUtil.md5Hex(dto.getPassword())) // 加密密码
+                .build();
 
         userMapper.insert(user);
         return "注册成功";
@@ -86,10 +85,11 @@ public class AuthServiceImpl implements AuthService {
         String token = JwtUtil.createJwt(jwtProperties.getSecretKey(), jwtProperties.getTtl(), claims);
 
         // 6. 封装返回对象
-        LoginVO loginVO = new LoginVO();
-        loginVO.setUserId(user.getUserId());
-        loginVO.setUserName(user.getUserName());
-        loginVO.setToken(token);
+        LoginVO loginVO = LoginVO.builder()
+                .userId(user.getUserId())
+                .userName(user.getUserName())
+                .token(token)
+                .build();
 
         return loginVO;
     }

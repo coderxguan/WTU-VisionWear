@@ -2,12 +2,13 @@ package com.wtu.DTO;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Schema(description = "登录请求参数")
 public class LoginDTO {
-    @Schema(description = "用户名", example = "testuser")
+    @Schema(description = "用户名", example = "username")
     @NotBlank(message = "用户名不能为空")
     private String username;
 

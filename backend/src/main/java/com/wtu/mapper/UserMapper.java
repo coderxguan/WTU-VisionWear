@@ -6,7 +6,4 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface UserMapper extends BaseMapper<User> {
-    // 这里可以添加自定义的方法
-    // 例如：List<User> findByUsername(String username);
-
 }

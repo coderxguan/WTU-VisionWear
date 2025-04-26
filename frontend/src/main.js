@@ -17,7 +17,7 @@ axios.defaults.timeout = 10000;  // 配置超时
 // 封装 axios 实例
 const request = axios.create({
     baseURL: 'http://localhost:8080/api',
-    timeout: 1000 * 15,
+    timeout: 1000 * 30,
     headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${getValidToken()}`,

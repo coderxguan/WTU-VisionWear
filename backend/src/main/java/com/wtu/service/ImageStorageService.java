@@ -30,11 +30,4 @@ public interface ImageStorageService {
      */
     String saveBase64Image(String base64Image, Long userId); // 添加 userId 参数
 
-    /**
-     * 获取所有图像URL
-     *
-     * @param userId 用户ID
-     * @return 图像URL列表
-     */
-    List<String> getAllImageUrls(Long userId);
 }
