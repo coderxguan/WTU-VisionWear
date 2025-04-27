@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import HomePage from '../views/HomePage.vue';
 import FashionMain from '../views/FashionMain.vue'
 import FashionOption1 from '../views/TextToImage.vue'
-import FashionOption2 from '../views/FashionOption2.vue'
+import FashionOption2 from '../views/Fashionoption2.vue'
 import FashionOption3 from '../views/FashionOption3.vue'
 import RenderPage from '../views/RenderPage.vue'
 import MaterialPage from '../views/MaterialPage.vue'

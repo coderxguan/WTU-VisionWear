@@ -1,12 +1,13 @@
 <script setup>
 import { ref } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
 
 const textFeature = ref('')
 const sketchFileList = ref([])
 const referenceFileList = ref([])
 const sketchPreviewUrl = ref('')
 const referencePreviewUrl = ref('')
+const check = ref(null)
+const currentPreviewFileName = ref('')
 
 const handleSketchChange = (file, fileList) => {
     sketchFileList.value = fileList.slice(-1)
@@ -25,15 +26,37 @@ const handleReferenceChange = (file, fileList) => {
 // 删除图片
 const handleRemove = (file, fileList, type) => {
   if (type === 'sketch') {
+    if (currentPreviewFileName.value === sketchFileList.value[0]?.name) {
+      check.value.innerHTML = ''
+      currentPreviewFileName.value = '' // 清空记录
+    }
     sketchFileList.value = []
+    sketchPreviewUrl.value = ''
   } else if (type === 'reference') {
+    if (currentPreviewFileName.value === referenceFileList.value[0]?.name) {
+      check.value.innerHTML = ''
+      currentPreviewFileName.value = '' // 清空记录
+    }
     referenceFileList.value = []
+    referencePreviewUrl.value = ''
   }
 }
+
 //右侧第一个格子展示图片
 const HandlePreview = (file) => {
+  const img = document.createElement('img')
+  img.src = URL.createObjectURL(file.raw)
+  img.style.width = '100%'
+  img.style.height = '100%'
+  img.style.objectFit = 'contain'
   
+  check.value.innerHTML = '' // 清空之前的内容
+  check.value.appendChild(img) // 把新图片加进去
+  currentPreviewFileName.value = file.name
 }
+
+
+
 // 第二个格子展示result图片
 </script>
 
@@ -97,7 +120,7 @@ const HandlePreview = (file) => {
         </el-aside>
   
         <el-main class="show">
-          <div class="check">
+          <div class="check" ref="check">
 
           </div>
           <div class="result">
@@ -144,6 +167,7 @@ const HandlePreview = (file) => {
 .show {
   display: flex;
   border-radius: 10px;
+  height: 700px;
 }
 .show .check {
   width: 50%;
