@@ -8,6 +8,8 @@
 target/
 out/
 *.class
+dist/
+deploy
 
 # 忽略日志文件
 *.log

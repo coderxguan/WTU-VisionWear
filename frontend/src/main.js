@@ -20,7 +20,6 @@ const request = axios.create({
     timeout: 1000 * 30,
     headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${getValidToken()}`,
         'token': getValidToken()
     }
 });
