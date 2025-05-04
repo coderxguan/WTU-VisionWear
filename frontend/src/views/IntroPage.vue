@@ -116,7 +116,6 @@
           v-if="forgotPasswordDialogVisible"
           :is-dialog="true"
           @switch-to-login="switchToLogin"
-          @switch-to-register="switchToRegister"
       />
     </el-dialog>
   </div>
@@ -138,6 +137,7 @@ const forgotPasswordDialogVisible = ref(false)
 const showLoginDialog = () => {
   loginDialogVisible.value = true
   registerDialogVisible.value = false
+  forgotPasswordDialogVisible.value = false
 }
 
 // 显示注册弹窗
