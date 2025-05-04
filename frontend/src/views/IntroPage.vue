@@ -81,6 +81,7 @@
           v-if="loginDialogVisible"
           :is-dialog="true"
           @switch-to-register="switchToRegister"
+          @switch-to-forgot-password = "switchToForgotPassword"
       />
     </el-dialog>
 
@@ -100,6 +101,24 @@
           @switch-to-login="switchToLogin"
       />
     </el-dialog>
+
+    <!-- 忘记密码弹窗 -->
+    <el-dialog
+        v-model="forgotPasswordDialogVisible"
+        title=""
+        width="400px"
+        :show-close="true"
+        :close-on-click-modal="false"
+        custom-class="auth-dialog"
+    >
+      <!-- 引入忘记密码页面组件 -->
+      <ForgotPasswordPage
+          v-if="forgotPasswordDialogVisible"
+          :is-dialog="true"
+          @switch-to-login="switchToLogin"
+          @switch-to-register="switchToRegister"
+      />
+    </el-dialog>
   </div>
 </template>
 
@@ -108,10 +127,12 @@ import {ref} from 'vue'
 // 导入您修改后的登录和注册页面组件
 import LoginPage from './LoginPage.vue'
 import RegisterPage from './RegisterPage.vue'
+import ForgotPasswordPage from "./ForgotPasswordPage.vue";
 
 // 弹窗状态
 const loginDialogVisible = ref(false)
 const registerDialogVisible = ref(false)
+const forgotPasswordDialogVisible = ref(false)
 
 // 显示登录弹窗
 const showLoginDialog = () => {
@@ -123,18 +144,27 @@ const showLoginDialog = () => {
 const showRegisterDialog = () => {
   registerDialogVisible.value = true
   loginDialogVisible.value = false
+  forgotPasswordDialogVisible.value = false
 }
 
 // 切换到登录
 const switchToLogin = () => {
   loginDialogVisible.value = true
   registerDialogVisible.value = false
+  forgotPasswordDialogVisible.value = false
 }
 
 // 切换到注册
 const switchToRegister = () => {
   registerDialogVisible.value = true
   loginDialogVisible.value = false
+  forgotPasswordDialogVisible.value = false
+}
+// 显示忘记密码弹窗
+const switchToForgotPassword = () => {
+  forgotPasswordDialogVisible.value = true
+  loginDialogVisible.value = false
+  registerDialogVisible.value = false
 }
 </script>
 

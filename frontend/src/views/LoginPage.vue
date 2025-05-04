@@ -96,7 +96,7 @@
 
         <div class="form-options">
           <el-checkbox v-model="rememberMe">记住我</el-checkbox>
-          <el-link type="primary" :underline="false">忘记密码?</el-link>
+          <el-link type="primary" :underline="false" @click="goToForgotPassword">忘记密码?</el-link>
         </div>
 
         <el-form-item>
@@ -133,7 +133,7 @@ const props = defineProps({
 })
 
 // 新增的emit，用于弹窗模式下切换到注册组件
-const emit = defineEmits(['switch-to-register'])
+const emit = defineEmits(['switch-to-register', 'switch-to-forgot-password'])
 
 const router = useRouter()
 
@@ -232,6 +232,15 @@ const goToRegister = () => {
   } else {
     // 独立页面模式下，使用路由导航
     router.push({ name: 'Register' })
+  }
+}
+const goToForgotPassword = () => {
+  if (props.isDialog) {
+    // 弹窗模式下，触发事件通知父组件切换为忘记密码弹窗
+    emit('switch-to-forgot-password')
+  } else {
+    // 独立页面模式下，使用路由导航
+    router.push({ name: 'ForgotPasswordPage' })
   }
 }
 
