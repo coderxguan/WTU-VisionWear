@@ -2,8 +2,10 @@ package com.wtu.controller;
 
 
 import com.wtu.DTO.ImageToImageDTO;
+import com.wtu.DTO.SketchToImageDTO;
 import com.wtu.DTO.TextToImageDTO;
 import com.wtu.VO.ImageToImageVO;
+import com.wtu.VO.SketchToImageVO;
 import com.wtu.VO.TextToImageVO;
 import com.wtu.result.Result;
 import com.wtu.service.ImageService;
@@ -114,4 +116,20 @@ public class ImageController {
             return Result.error("以图生图失败: " + e.getMessage());
         }
     }
+    @PostMapping("/sketch-to-image")
+    @Operation(summary = "线稿生图功能")
+    public Result<List<String>> sketchToImage(@RequestBody @Validated SketchToImageDTO request,
+                                              HttpServletRequest httpServletRequest) {
+        try {
+            Long userId = UserContext.getCurrentUserId(httpServletRequest);
+            SketchToImageVO response = imageService.sketchToImage(request, userId);
+            List<String> ids = response.getImages().stream()
+                    .map(SketchToImageVO.GeneratedImage::getImageId)
+                    .collect(Collectors.toList());
+            return Result.success(ids);
+        } catch (Exception e) {
+            return Result.error("线稿生图失败: " + e.getMessage());
+        }
+    }
+
 }

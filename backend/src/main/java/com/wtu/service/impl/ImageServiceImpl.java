@@ -5,9 +5,17 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.tencentcloudapi.aiart.v20221229.AiartClient;
+import com.tencentcloudapi.aiart.v20221229.models.SketchToImageRequest;
+import com.tencentcloudapi.aiart.v20221229.models.SketchToImageResponse;
+import com.tencentcloudapi.common.exception.TencentCloudSDKException;
+import com.tencentcloudapi.common.profile.ClientProfile;
+import com.tencentcloudapi.common.profile.HttpProfile;
 import com.wtu.DTO.ImageToImageDTO;
+import com.wtu.DTO.SketchToImageDTO;
 import com.wtu.DTO.TextToImageDTO;
 import com.wtu.VO.ImageToImageVO;
+import com.wtu.VO.SketchToImageVO;
 import com.wtu.VO.TextToImageVO;
 import com.wtu.config.StableDiffusionConfig;
 import com.wtu.entity.Image;
@@ -17,6 +25,8 @@ import com.wtu.service.ImageStorageService;
 import com.wtu.utils.TransApi;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+
+import com.tencentcloudapi.common.Credential;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
@@ -31,6 +41,10 @@ import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -205,6 +219,87 @@ public class ImageServiceImpl implements ImageService {
             throw new Exception("以图生图失败: " + e.getMessage(), e);
         }
     }
+
+    // 线稿生图
+    private static final String TENCENT_REGION = "ap-shanghai"; // 根据需求调整地域
+
+    @Value("${vision.tencent.secret-id}")
+    private String tencentSecretId;
+
+    @Value("${vision.tencent.secret-key}")
+    private String tencentSecretKey;
+
+    @Override
+    public SketchToImageVO sketchToImage(SketchToImageDTO request, Long userId) throws Exception {
+        long startTime = System.currentTimeMillis();
+        String requestId = UUID.randomUUID().toString();
+
+        try {
+            // 1. 获取线稿图URL
+            String sketchUrl = request.getSketchImageId();
+            if (!sketchUrl.startsWith("http")) {
+                sketchUrl = imageStorageService.getImageUrl(sketchUrl);
+            }
+            log.info("线稿图URL: {}", sketchUrl);
+
+            // 2. 使用腾讯云SDK调用API
+            SketchToImageResponse response = callTencentSketchToImage(
+                    sketchUrl,
+                    request.getPrompt(),
+                    request.getRspImgType()
+            );
+
+            // 3. 解析响应并保存图片
+            String resultImageUrl = response.getResultImage();
+            String imageId = imageStorageService.saveImageFromUrl(resultImageUrl, userId);
+
+            return SketchToImageVO.builder()
+                    .requestId(requestId)
+                    .sketchImageId(request.getSketchImageId())
+                    .images(List.of(
+                            SketchToImageVO.GeneratedImage.builder()
+                                    .imageId(imageId)
+                                    .imageUrl(imageStorageService.getImageUrl(imageId))
+                                    .build()
+                    ))
+                    .generationTimeMs(System.currentTimeMillis() - startTime)
+                    .build();
+
+        } catch (TencentCloudSDKException e) {
+            log.error("腾讯云API调用失败: {}", e.getMessage());
+            throw new Exception("线稿生图服务暂不可用: " + e.getMessage());
+        } catch (Exception e) {
+            log.error("线稿生图失败", e);
+            throw new Exception("线稿生图失败: " + e.getMessage());
+        }
+    }
+
+
+    private SketchToImageResponse callTencentSketchToImage(
+            String sketchUrl,
+            String prompt,
+            String rspImgType
+    ) throws TencentCloudSDKException {
+        // 配置认证信息
+        Credential cred = new Credential(tencentSecretId, tencentSecretKey);
+
+        // 创建客户端
+        HttpProfile httpProfile = new HttpProfile();
+        httpProfile.setEndpoint("aiart.tencentcloudapi.com");
+        ClientProfile clientProfile = new ClientProfile();
+        clientProfile.setHttpProfile(httpProfile);
+        AiartClient client = new AiartClient(cred, TENCENT_REGION, clientProfile);
+
+        // 构建请求
+        SketchToImageRequest req = new SketchToImageRequest();
+        req.setInputUrl(sketchUrl);
+        req.setPrompt(prompt);
+        req.setRspImgType(rspImgType);
+
+        // 发送请求
+        return client.SketchToImage(req);
+    }
+
 
     // 创建一个带有超时设置的RestTemplate
     private RestTemplate createTimeoutRestTemplate() {

@@ -30,4 +30,13 @@ public interface ImageStorageService {
      */
     String saveBase64Image(String base64Image, Long userId); // 添加 userId 参数
 
+
+    /**
+     * 从URL下载图像并保存到阿里云OSS
+     *
+     * @param imageUrl 图像URL
+     * @param userId 用户ID
+     * @return 生成的图像ID
+     */
+    String saveImageFromUrl(String imageUrl, Long userId);
 }
