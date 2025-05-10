@@ -1,6 +1,5 @@
 package com.wtu.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.wtu.entity.Image;
 import com.wtu.mapper.ImageMapper;
 import com.wtu.service.ImageStorageService;
@@ -12,11 +11,8 @@ import java.net.URL;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor

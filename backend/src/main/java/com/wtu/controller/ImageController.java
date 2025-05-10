@@ -10,6 +10,7 @@ import com.wtu.VO.TextToImageVO;
 import com.wtu.result.Result;
 import com.wtu.service.ImageService;
 import com.wtu.service.ImageStorageService;
+import com.wtu.utils.AliOssUtil;
 import com.wtu.utils.UserContext;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,9 +19,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
@@ -33,6 +37,7 @@ public class ImageController {
     // IOC 注入
     private final ImageService imageService;
     private final ImageStorageService imageStorageService;
+    private final AliOssUtil aliOssUtil;
 
     @PostMapping("/text-to-image")
     @Operation(summary = "文生图功能")
@@ -129,6 +134,37 @@ public class ImageController {
             return Result.success(ids);
         } catch (Exception e) {
             return Result.error("线稿生图失败: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/upload")
+    @Operation(description = "文件上传")
+    public Result<String> upload(MultipartFile file){
+        log.info("文件上传开始: 文件名={}, 大小={}bytes",
+                file.getOriginalFilename(), file.getSize());
+
+        try {
+            String originalFilename = file.getOriginalFilename();
+            if (originalFilename == null) {
+                log.error("文件名为空");
+                return Result.error("文件名为空");
+            }
+
+            String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            // 构建新的文件名称
+            String objectName = UUID.randomUUID().toString() + extension;
+            log.info("生成的对象名称: {}", objectName);
+
+            String filePath = aliOssUtil.upload(file.getBytes(), objectName);
+            log.info("上传成功，返回的文件路径: {}", filePath);
+
+            return Result.success(filePath);
+        } catch (IOException e) {
+            log.error("文件上传失败, 错误: {}", e.getMessage(), e);
+            return Result.error("文件读取失败: " + e.getMessage());
+        } catch (Exception e) {
+            log.error("文件上传过程发生未知错误", e);
+            return Result.error("上传过程发生错误: " + e.getMessage());
         }
     }
 
