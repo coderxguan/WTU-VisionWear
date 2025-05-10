@@ -19,9 +19,16 @@ const request = axios.create({
     baseURL: 'http://localhost:8080/api',
     timeout: 1000 * 30,
     headers: {
-        'Content-Type': 'application/json',
-        'token': getValidToken()
+        'Content-Type': 'application/json'
     }
+});
+
+// 请求拦截器，动态获取最新的token
+request.interceptors.request.use(config => {
+    config.headers.token = getValidToken(); // 每次请求前获取最新token
+    return config;
+}, error => {
+    return Promise.reject(error);
 });
 
 // 创建 Vue 实例并挂载
