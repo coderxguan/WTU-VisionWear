@@ -166,11 +166,11 @@ public class ImageServiceImpl implements ImageService {
 
         long startTime = System.currentTimeMillis();
         String requestId = UUID.randomUUID().toString();
-        log.info("开始以图生图请求: {}, 源图像ID: {}, 提示: {}", requestId, request.getSourceImageId(), request.getPrompt());
+        log.info("开始以图生图请求: {}, 源图像Url: {}, 提示: {}", requestId, request.getSourceImageUrl(), request.getPrompt());
 
         try {
             // 获取源图像
-            String sourceImageUrl = imageStorageService.getImageUrl(request.getSourceImageId());
+            String sourceImageUrl = request.getSourceImageUrl();
             byte[] imageBytes = restTemplate.getForObject(sourceImageUrl, byte[].class);
             if (imageBytes == null) {
                 throw new Exception("无法获取源图像数据");
@@ -203,7 +203,7 @@ public class ImageServiceImpl implements ImageService {
             return ImageToImageVO.builder()
                     .requestId(requestId)
                     .images(generatedImages)
-                    .sourceImageId(request.getSourceImageId())
+                    .sourceImageUrl(request.getSourceImageUrl())
                     .prompt(request.getPrompt())
                     .generationTimeMs(duration)
                     .build();

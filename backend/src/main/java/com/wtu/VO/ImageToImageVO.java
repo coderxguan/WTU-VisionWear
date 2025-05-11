@@ -25,9 +25,9 @@ public class ImageToImageVO {
     private String requestId;
 
     /**
-     * 源图像ID
+     * 源图像url
      */
-    private String sourceImageId;
+    private String sourceImageUrl;
 
     /**
      * 使用的提示词

@@ -77,15 +77,15 @@ public class ImageController {
 
     @PostMapping("/image-to-image")
     @Operation(summary = "图生图功能")
-    public Result<List<String>> imageToImage(@RequestBody ImageToImageDTO request,
+    public Result<ImageToImageVO> imageToImage(@RequestBody ImageToImageDTO request,
                                              HttpServletRequest httpServletRequest) {
         try {
             Long userId = UserContext.getCurrentUserId(httpServletRequest);
             log.info("当前用户 ID: {}", userId);
 
             // 参数校验
-            if (request.getSourceImageId() == null || request.getSourceImageId().isEmpty()) {
-                return Result.error("源图像ID不能为空");
+            if (request.getSourceImageUrl() == null || request.getSourceImageUrl().isEmpty()) {
+                return Result.error("源图像url不能为空");
             }
             if (request.getPrompt() == null || request.getPrompt().isEmpty()) {
                 return Result.error("提示词不能为空");
@@ -104,13 +104,8 @@ public class ImageController {
             // 调用用户服务的imageToImage方法生成图像
             ImageToImageVO response = imageService.imageToImage(request, userId);
 
-            // 直接使用流操作收集ID
-            List<String> ids = response.getImages().stream()
-                    .map(ImageToImageVO.GeneratedImage::getImageId)
-                    .collect(Collectors.toList());
-
-            log.info("以图生图处理成功: 生成了{}张图片", ids.size());
-            return Result.success(ids);
+            log.info("以图生图处理成功: {}", response);
+            return Result.success(response);
         } catch (Exception e) {
             log.error("以图生图失败", e);
             // 错误信息处理保持不变

@@ -11,9 +11,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ImageToImageDTO {
     /**
-     * 源图像ID
+     * 源图像url
      */
-    private String sourceImageId;
+    private String sourceImageUrl;
 
     /**
      * 提示词
