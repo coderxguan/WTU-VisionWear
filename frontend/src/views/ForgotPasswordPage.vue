@@ -140,7 +140,7 @@
 import { ref, reactive, onBeforeUnmount } from 'vue'
 import { Message, CircleCheckFilled } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import axios from 'axios'
+import request from '../main.js'
 
 // 处理弹窗模式
 const props = defineProps({
@@ -199,7 +199,7 @@ const sendVerificationCode = async () => {
       try {
         loading.value = true
         // 发送验证码请求
-        const response = await axios.post('/auth/send-verification', {
+        const response = await request.post('/auth/send-verification', {
           email: forgotPasswordForm.email,
           type: 'reset_password'
         })
@@ -261,7 +261,7 @@ const handleForgotPassword = async () => {
     }
 
     // 发送密码重置请求
-    const response = await axios.post('/auth/forgot-password', requestData)
+    const response = await request.post('/auth/forgot-password', requestData)
 
     if (response.data && response.data.code === 1) {
       // 密码重置邮件发送成功

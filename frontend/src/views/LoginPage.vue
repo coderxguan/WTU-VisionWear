@@ -122,7 +122,7 @@ import { ref, onMounted } from 'vue'
 import { User, Lock } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
-import axios from "axios";
+import request from '../main.js'
 
 // 新增的props，用于判断是否为弹窗模式
 const props = defineProps({
@@ -175,7 +175,7 @@ const handleLogin = async () => {
   loading.value = true
   try {
     // 这里是您的登录逻辑
-    const response = await axios.post('/auth/login', loginForm.value)
+    const response = await request.post('/auth/login', loginForm.value)
     console.log(response.data)  // 调试打印，检查返回的结构
 
     if (response.data && response.data.code === 1 && response.data.data) {

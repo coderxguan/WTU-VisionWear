@@ -10,10 +10,6 @@ import 'element-plus/dist/index.css';
 import axios from 'axios';
 import {getValidToken} from "./utils/auth.js";
 
-// 配置 axios 的基础 URL
-axios.defaults.baseURL = 'http://localhost:8080/api';  // 修改为实际的后端地址
-axios.defaults.timeout = 10000;  // 配置超时
-
 // 封装 axios 实例
 const request = axios.create({
     baseURL: 'http://localhost:8080/api',

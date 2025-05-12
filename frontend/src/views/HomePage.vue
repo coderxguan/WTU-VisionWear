@@ -75,10 +75,10 @@
         <router-link
             to="/home/style-extension"
             class="menu-item el-menu-item"
-            :class="{ active: activeFunction === '风格延申' }"
-            @click="selectMenu('风格延申')"
+            :class="{ active: activeFunction === '风格延伸' }"
+            @click="selectMenu('风格延伸')"
         >
-          <el-icon><Picture /></el-icon>风格延申
+          <el-icon><Picture /></el-icon>风格延伸
         </router-link>
       </ul>
     </aside>

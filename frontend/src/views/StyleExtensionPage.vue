@@ -356,6 +356,9 @@ const uploadImage = async (options) => {
 
     if (response.data.code === 1 && response.data.data) {
       sourceImageUrl.value = response.data.data
+      
+      // 添加调试日志
+      console.log('上传成功，获取到的图片URL:', sourceImageUrl.value)
 
       // 关键修复：设置sourceImage值并主动清除验证错误
       formData.sourceImage = "uploaded"  // 设置为非空值
@@ -382,8 +385,20 @@ const uploadImage = async (options) => {
       })
     }
   } catch (error) {
-    // 错误处理代码保持不变
-    // ...
+    console.error('上传错误:', error)
+
+    // 增强错误日志
+    if (error.response) {
+      console.error('服务器响应:', {
+        status: error.response.status,
+        headers: error.response.headers,
+        data: error.response.data
+      })
+    } else if (error.request) {
+      console.error('请求已发送但没有响应:', error.request)
+    }
+
+    ElMessage.error(error.message || '图片上传失败，请重试')
   } finally {
     uploadLoading.value = false
   }
@@ -421,7 +436,7 @@ const generateImage = async () => {
   errorMessage.value = ''
 
   try {
-  // 获取token
+    // 获取token
     const token = getValidToken()
     if (!token) {
       throw new Error('未登录，请先登录！')
@@ -431,7 +446,7 @@ const generateImage = async () => {
 
     // 准备请求体数据并进行参数检查
     const requestBody = {
-      sourceImageId: sourceImageUrl.value, // 这里使用URL代替ID
+      sourceImageUrl: sourceImageUrl.value, // 修正参数名称，使用sourceImageUrl
       prompt: formData.prompt.trim(), // 去除空格
       negativePrompt: formData.negativePrompt,
       cfgScale: formData.cfgScale,
@@ -443,7 +458,7 @@ const generateImage = async () => {
     }
 
     // 日志输出请求参数（便于调试）
-    console.log('请求参数:', requestBody)
+    console.log('请求参数:', JSON.stringify(requestBody))
 
     // 发送请求
     const response = await request({
@@ -453,7 +468,7 @@ const generateImage = async () => {
     })
 
     console.log('响应状态:', response.status)
-    console.log('响应数据:', response.data)
+    console.log('响应数据:', JSON.stringify(response.data))
 
     if (response.data.code === 0 && response.data.data) {
       // 按照VO结构处理返回数据

@@ -162,7 +162,7 @@ import { ref, onMounted, reactive } from 'vue'
 import { User, Lock, Message } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
+import request from '../main.js'
 
 // 新增的props，用于判断是否为弹窗模式
 const props = defineProps({
@@ -269,7 +269,7 @@ const handleRegister = async () => {
     }
 
     // 发送注册请求到后端API
-    const response = await axios.post('/auth/register', registerData)
+    const response = await request.post('/auth/register', registerData)
 
     // 根据响应状态码处理不同情况
     if (response.data.code === 1) { // 成功状态码为1
