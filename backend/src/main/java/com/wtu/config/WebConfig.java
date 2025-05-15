@@ -28,6 +28,7 @@ public class WebConfig implements WebMvcConfigurer {
     private static final List<String> EXCLUDE_PATHS = Arrays.asList(
             "/api/auth/login",
             "/api/auth/register",
+            "/api/auth/wxCheck",
             "/doc.html",
             "/swagger-ui.html",
             "/swagger-ui/**",

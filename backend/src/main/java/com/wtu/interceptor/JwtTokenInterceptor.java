@@ -29,7 +29,6 @@ public class JwtTokenInterceptor implements HandlerInterceptor {
         try {
             //检查token
             log.info("检验开始");
-
             String token = request.getHeader(jwtProperties.getTokenName());
             Claims claims = JwtUtil.parseJwt(jwtProperties.getSecretKey(), token);
             log.info("检验token: {}",token);

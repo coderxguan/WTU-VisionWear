@@ -1,24 +1,40 @@
 package com.wtu.controller;
 
 
+import cn.hutool.extra.qrcode.QrCodeUtil;
+import com.alibaba.fastjson.JSON;
 import com.wtu.DTO.LoginDTO;
 import com.wtu.DTO.RegisterDTO;
+import com.wtu.DTO.WxSignatureDTO;
 import com.wtu.VO.LoginVO;
+import com.wtu.entity.WeChatUser;
+import com.wtu.exception.ServiceException;
 import com.wtu.result.Result;
 import com.wtu.service.AuthService;
+import com.wtu.utils.WeChatUtil;
+import io.swagger.v3.core.util.Json;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.springframework.web.bind.annotation.*;
 
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Collections;
 
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 @Tag(name = "认证模块")
+@Slf4j
 public class AuthController {
     // IOC 注入
     private final AuthService authService;
@@ -40,4 +56,55 @@ public class AuthController {
         LoginVO loginVO = authService.login(dto);
         return Result.success(loginVO);
     }
+
+    @Operation(summary = "微信登录校验")
+    @GetMapping("/wxCheck")
+    public String wxCheck(@ModelAttribute WxSignatureDTO wxSignatureDTO){
+            //进行校验是是否是微信登录请求
+            log.info("收到微信登录校验:{}",wxSignatureDTO);
+            StringBuilder stringBuilder=new StringBuilder();
+
+        ArrayList<String> array=new ArrayList<>();
+        array.add("WTU");//token名为WTU
+        array.add(wxSignatureDTO.getTimestamp());
+        array.add(wxSignatureDTO.getNonce());
+        //将token nonce timestamp按照字典项排序,然后拼接
+        Collections.sort(array);
+        for(String item : array){
+            stringBuilder.append(item);
+        }
+        //进行一个sha1加密
+        String auth =DigestUtils.sha1Hex(stringBuilder.toString());
+        log.info("auth:{}",auth);
+        if(auth.equals(wxSignatureDTO.getSignature())){
+            //校验成功，原样返回
+            return wxSignatureDTO.getEchostr();
+        }else{
+            log.info("signature:{}",wxSignatureDTO.getSignature());
+            throw new ServiceException("微信登录校验失败！");
+        }
+
+    }
+
+    @Operation(summary = "用户微信登录")
+    @GetMapping("/wxLogin")
+    public void wxLoginPage(HttpServletResponse response) throws IOException {
+        //设置回调URL
+        String redirectURL= URLEncoder.encode("http://fe6bd74.r9.cpolar.top/wxCallback","UTF-8");
+
+        String URL="https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxf82120c7638e1d27&redirect_uri="+redirectURL+
+                "&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect";
+
+        response.setContentType("image/png");
+        QrCodeUtil.generate(URL,300,300,"jpg",response.getOutputStream());
+    }
+
+    @RequestMapping("/wxCallback")
+    public String pcCallback(String code, String state, HttpServletRequest request, HttpServletResponse response, HttpSession session) throws Exception{
+        WeChatUser userInfo = WeChatUtil.getUserInfo(code);
+        //TODO 缓存用户信息，构造session
+        return JSON.toJSONString(userInfo);
+    }
+
+
 }
