@@ -5,6 +5,7 @@ import com.wtu.entity.TokenInfo;
 import com.wtu.entity.WeChatUser;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -21,7 +22,7 @@ public class WeChatUtil {
 
    private static final String appId="wxf82120c7638e1d27";
    private static final String secret="b20875bf3ef114638f9d6fc40bdeb430";
-    @Resource
+    @Autowired
     private static RestTemplate restTemplate;
     /**
      * @description: 获取微信用户信息

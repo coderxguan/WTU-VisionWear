@@ -1,6 +1,4 @@
 package com.wtu.controller;
-
-
 import cn.hutool.extra.qrcode.QrCodeUtil;
 import com.alibaba.fastjson.JSON;
 import com.wtu.DTO.LoginDTO;
