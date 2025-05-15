@@ -12,10 +12,8 @@ import com.wtu.exception.ServiceException;
 import com.wtu.result.Result;
 import com.wtu.service.AuthService;
 import com.wtu.utils.WeChatUtil;
-import io.swagger.v3.core.util.Json;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -23,10 +21,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.web.bind.annotation.*;
-
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -90,7 +87,7 @@ public class AuthController {
     @GetMapping("/wxLogin")
     public void wxLoginPage(HttpServletResponse response) throws IOException {
         //设置回调URL
-        String redirectURL= URLEncoder.encode("http://fe6bd74.r9.cpolar.top/wxCallback","UTF-8");
+        String redirectURL= URLEncoder.encode("http://fe6bd74.r9.cpolar.top/wxCallback", StandardCharsets.UTF_8);
 
         String URL="https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxf82120c7638e1d27&redirect_uri="+redirectURL+
                 "&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect";

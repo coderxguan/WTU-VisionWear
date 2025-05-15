@@ -19,8 +19,8 @@ import org.springframework.web.client.RestTemplate;
 @Component
 public class WeChatUtil {
 
-   private static String appId="wxf82120c7638e1d27";
-   private static String secret="b20875bf3ef114638f9d6fc40bdeb430";
+   private static final String appId="wxf82120c7638e1d27";
+   private static final String secret="b20875bf3ef114638f9d6fc40bdeb430";
     @Resource
     private static RestTemplate restTemplate;
     /**
