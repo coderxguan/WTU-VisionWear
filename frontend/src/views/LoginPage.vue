@@ -122,7 +122,8 @@ import { ref, onMounted } from 'vue'
 import { User, Lock } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
-import request from '../main.js'
+import { auth } from '../api'
+import { handleApiError, handleBusinessError, showSuccess } from '../utils/errorHandler'
 
 // 新增的props，用于判断是否为弹窗模式
 const props = defineProps({
@@ -174,51 +175,48 @@ const submitForm = (formName) => {
 const handleLogin = async () => {
   loading.value = true
   try {
-    // 这里是您的登录逻辑
-    const response = await request.post('/auth/login', loginForm.value)
+    // 使用API模块进行登录
+    const response = await auth.login(loginForm.value)
     console.log(response.data)  // 调试打印，检查返回的结构
 
-    if (response.data && response.data.code === 1 && response.data.data) {
-      // 登录成功，保存 token 和其他信息
-      const {token, userName, userId} = response.data.data
+    // 使用业务错误处理工具检查响应
+    const error = handleBusinessError(response, '登录失败');
+    if (error) return; // 如果有错误，handleBusinessError已经显示了错误消息
 
-      if (token) {
-        const expireTime = Date.now() + 2 * 60 * 60 * 1000 // 当前时间 + 2 小时
-        localStorage.setItem('token', JSON.stringify({
-          value: token,
-          expire: expireTime
-        }))
+    // 登录成功，保存 token 和其他信息
+    const {token, userName, userId} = response.data.data
 
-        localStorage.setItem('userName', userName) // 保存用户名
-        localStorage.setItem('userId', userId) // 保存用户ID
+    if (token) {
+      const expireTime = Date.now() + 2 * 60 * 60 * 1000 // 当前时间 + 2 小时
+      localStorage.setItem('token', JSON.stringify({
+        value: token,
+        expire: expireTime
+      }))
 
-        // 保存记住我的状态
-        if (rememberMe.value) {
-          localStorage.setItem('rememberMe', 'true')
-          localStorage.setItem('savedUsername', loginForm.value.username)
-        } else {
-          localStorage.removeItem('rememberMe')
-          localStorage.removeItem('savedUsername')
-        }
+      localStorage.setItem('userName', userName) // 保存用户名
+      localStorage.setItem('userId', userId) // 保存用户ID
 
-        // 登录成功后弹窗提示并跳转到首页
-        ElMessage({
-          message: '登录成功，欢迎回来！',
-          type: 'success',
-          duration: 2000,
-          showClose: true,
-          center: true
-        })
-        await router.push({name: 'Home'})
+      // 保存记住我的状态
+      if (rememberMe.value) {
+        localStorage.setItem('rememberMe', 'true')
+        localStorage.setItem('savedUsername', loginForm.value.username)
       } else {
-        ElMessage.error('返回的 token 不存在')
+        localStorage.removeItem('rememberMe')
+        localStorage.removeItem('savedUsername')
       }
+
+      // 登录成功后显示成功消息并跳转到首页
+      showSuccess('登录成功，欢迎回来！', true)
+      
+      // 检查是否有重定向参数
+      const redirect = router.currentRoute.value.query.redirect
+      await router.push(redirect || '/home')
     } else {
-      ElMessage.error(response.data.msg || '登录失败')
+      ElMessage.error('返回的 token 不存在')
     }
   } catch (error) {
     console.error('登录请求出错', error)
-    ElMessage.error('登录请求失败，请检查网络连接')
+    handleApiError(error, '登录请求失败，请检查网络连接')
   } finally {
     loading.value = false
   }

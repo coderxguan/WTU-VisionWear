@@ -44,12 +44,11 @@
               <el-col :span="12">
                 <el-form-item label="样式预设">
                   <el-select v-model="formData.style" placeholder="请选择样式预设" style="width: 100%">
-                    <el-option label="默认" value=""></el-option>
                     <el-option
-                        v-for="style in styleOptions"
-                        :key="style"
-                        :label="style"
-                        :value="style"
+                        v-for="style in styleOptionsMap"
+                        :key="style.value"
+                        :label="style.label"
+                        :value="style.value"
                     />
                   </el-select>
                 </el-form-item>
@@ -64,16 +63,7 @@
                         :format-tooltip="value => value.toFixed(2)"
                     ></el-slider>
                   </el-tooltip>
-                </el-form-item>
-
-                <el-form-item label="随机种子">
-                  <el-input-number
-                      v-model="formData.seed"
-                      :min="-1"
-                      controls-position="right"
-                      style="width: 100%"
-                      placeholder="-1表示随机"
-                  ></el-input-number>
+                  <div class="slider-value">{{ formData.imageStrength.toFixed(2) }}</div>
                 </el-form-item>
               </el-col>
             </el-row>
@@ -203,10 +193,6 @@
                     <span class="info-label">尺寸:</span>
                     <span>{{ resultImage.width }} × {{ resultImage.height }}</span>
                   </div>
-                  <div class="info-item">
-                    <span class="info-label">种子:</span>
-                    <span>{{ resultImage.seed }}</span>
-                  </div>
                 </div>
               </div>
 
@@ -231,7 +217,8 @@ import { ref, reactive, computed } from 'vue'
 import { ElMessage, ElNotification } from 'element-plus'
 import { Plus, Picture, Loading, Download, CopyDocument, Check } from '@element-plus/icons-vue'
 import { getValidToken } from "../utils/auth.js"
-import request from "../main.js"
+import { image } from "../api"  // 导入image API模块而不是直接使用request
+import { handleApiError, handleBusinessError, showSuccess } from '../utils/errorHandler' // 导入错误处理工具
 
 // 样式预设选项
 const styleOptions = [
@@ -239,6 +226,28 @@ const styleOptions = [
   'digital-art', 'enhance', 'fantasy-art', 'isometric', 'line-art',
   'low-poly', 'modeling-compound', 'neon-punk', 'origami', 'photographic',
   'pixel-art', 'tile-texture'
+]
+
+// 替换为中文标签:
+const styleOptionsMap = [
+  { label: '默认', value: '' },
+  { label: '3D模型', value: '3d-model' },
+  { label: '模拟胶片', value: 'analog-film' },
+  { label: '动漫', value: 'anime' },
+  { label: '电影', value: 'cinematic' },
+  { label: '漫画书', value: 'comic-book' },
+  { label: '数字艺术', value: 'digital-art' },
+  { label: '增强', value: 'enhance' },
+  { label: '奇幻艺术', value: 'fantasy-art' },
+  { label: '等距', value: 'isometric' },
+  { label: '线稿', value: 'line-art' },
+  { label: '低多边形', value: 'low-poly' },
+  { label: '建模化合物', value: 'modeling-compound' },
+  { label: '霓虹朋克', value: 'neon-punk' },
+  { label: '折纸', value: 'origami' },
+  { label: '摄影', value: 'photographic' },
+  { label: '像素艺术', value: 'pixel-art' },
+  { label: '瓷砖纹理', value: 'tile-texture' }
 ]
 
 // 表单引用
@@ -455,71 +464,38 @@ const uploadImage = async (options) => {
     })
 
     // 使用FormData作为参数，不要设置Content-Type
-    const response = await request({
-      method: 'post',
-      url: '/image/upload',
-      data: formData,
-      headers: {
-        // 不要手动设置Content-Type，让浏览器自动处理
-      },
-      // 确保请求正确处理formData
-      transformRequest: [function (data) {
-        // 如果是FormData实例，直接返回，不做任何转换
-        if (data instanceof FormData) {
-          return data;
-        }
-        // 其他情况按默认处理
-        return JSON.stringify(data);
-      }]
-    })
+    const response = await image.uploadImage(formData)
 
     console.log('上传响应:', response)
 
-    if (response.data.code === 1 && response.data.data) {
-      sourceImageUrl.value = response.data.data
+    // 使用业务错误处理工具检查响应
+    const error = handleBusinessError(response, '图片上传失败');
+    if (error) return; // 如果有错误，handleBusinessError已经显示了错误消息
+
+    // 没有错误，继续处理成功情况
+    sourceImageUrl.value = response.data.data
       
-      // 添加调试日志
-      console.log('上传成功，获取到的图片URL:', sourceImageUrl.value)
+    // 添加调试日志
+    console.log('上传成功，获取到的图片URL:', sourceImageUrl.value)
 
-      // 关键修复：设置sourceImage值并主动清除验证错误
-      formData.sourceImage = "uploaded"  // 设置为非空值
+    // 关键修复：设置sourceImage值并主动清除验证错误
+    formData.sourceImage = "uploaded"  // 设置为非空值
 
-      // 延迟一下再验证，确保DOM更新
-      setTimeout(() => {
-        if (formRef.value) {
-          // 清除sourceImage字段的验证错误
-          formRef.value.clearValidate('sourceImage')
-        }
-      }, 100)
+    // 延迟一下再验证，确保DOM更新
+    setTimeout(() => {
+      if (formRef.value) {
+        // 清除sourceImage字段的验证错误
+        formRef.value.clearValidate('sourceImage')
+      }
+    }, 100)
 
-      ElMessage.success({
-        message: '图片上传成功，请继续填写其他参数',
-        type: 'success',
-        duration: 3000
-      })
-    } else {
-      ElMessage.error({
-        message: '图片上传失败: ' + (response.data.msg || '未知错误'),
-        type: 'error',
-        duration: 5000,
-        showClose: true
-      })
-    }
+    // 显示成功消息
+    showSuccess('图片上传成功，请继续填写其他参数')
   } catch (error) {
     console.error('上传错误:', error)
 
-    // 增强错误日志
-    if (error.response) {
-      console.error('服务器响应:', {
-        status: error.response.status,
-        headers: error.response.headers,
-        data: error.response.data
-      })
-    } else if (error.request) {
-      console.error('请求已发送但没有响应:', error.request)
-    }
-
-    ElMessage.error(error.message || '图片上传失败，请重试')
+    // 使用统一错误处理工具
+    handleApiError(error, '图片上传失败，请重试')
   } finally {
     uploadLoading.value = false
   }
@@ -575,82 +551,47 @@ const generateImage = async () => {
       samples: 1, // 固定只生成一张图
       steps: formData.steps,
       style: formData.style,
-      seed: formData.seed === -1 ? null : formData.seed
+      seed: null // 始终使用随机种子
     }
 
     // 日志输出请求参数（便于调试）
     console.log('请求参数:', JSON.stringify(requestBody))
 
     // 发送请求
-    const response = await request({
-      method: 'post',
-      url: '/image/image-to-image',
-      data: requestBody
-    })
+    const response = await image.imageToImage(requestBody)
 
     console.log('响应状态:', response.status)
     console.log('响应数据:', JSON.stringify(response.data))
 
-    if (response.data.code === 1 && response.data.data) {
-      // 按照VO结构处理返回数据
-      const result = response.data.data
-      requestId.value = result.requestId
-      generationTime.value = result.generationTimeMs
+    // 使用业务错误处理工具检查响应
+    const error = handleBusinessError(response, '图片生成失败');
+    if (error) {
+      errorMessage.value = error.message;
+      return;
+    }
 
-      // 显示第一张生成的图片
-      if (result.images && result.images.length > 0) {
-        resultImage.value = result.images[0]
-        ElNotification({
-          title: '生成成功',
-          message: '图片已成功生成',
-          type: 'success',
-          position: 'bottom-right'
-        })
-      } else {
-        errorMessage.value = '没有生成任何图像'
-        ElMessage.warning(errorMessage.value)
-      }
+    // 没有错误，继续处理成功情况
+    // 按照VO结构处理返回数据
+    const result = response.data.data
+    requestId.value = result.requestId
+    generationTime.value = result.generationTimeMs
+
+    // 显示第一张生成的图片
+    if (result.images && result.images.length > 0) {
+      resultImage.value = result.images[0]
+      
+      // 使用成功通知
+      showSuccess('图片已成功生成', true)
     } else {
-      errorMessage.value = response.data.msg || '生成失败'
-      ElMessage.error({
-        message: errorMessage.value,
-        type: 'error',
-        duration: 5000,
-        showClose: true
-      })
+      errorMessage.value = '没有生成任何图像'
+      ElMessage.warning(errorMessage.value)
     }
   } catch (error) {
     console.error('API调用错误:', error)
 
-    // 增强错误日志
-    if (error.response) {
-      console.error('服务器响应:', {
-        status: error.response.status,
-        headers: error.response.headers,
-        data: error.response.data
-      })
-
-      // 针对不同的HTTP状态码给出更具体的错误信息
-      if (error.response.status === 401) {
-        errorMessage.value = '登录已过期，请重新登录'
-      } else if (error.response.status === 400) {
-        errorMessage.value = '请求参数错误：' + (error.response.data.msg || '参数格式不正确')
-      } else {
-        errorMessage.value = '服务器错误：' + (error.response.data.msg || '未知错误')
-      }
-    } else if (error.request) {
-      console.error('请求已发送但没有响应:', error.request)
-      errorMessage.value = '网络连接问题，服务器没有响应'
-    } else {
-      errorMessage.value = error.message || '发送请求时出错'
-    }
-
-    ElMessage.error({
-      message: errorMessage.value,
-      type: 'error',
-      duration: 5000,
-      showClose: true
-    })
+    // 使用统一错误处理工具
+    const errorResult = handleApiError(error, '图片生成失败，请稍后重试')
+    errorMessage.value = errorResult.message
   } finally {
     isLoading.value = false
   }

@@ -140,7 +140,12 @@
 import { ref, reactive, onBeforeUnmount } from 'vue'
 import { Message, CircleCheckFilled } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import request from '../main.js'
+import { auth } from '../api'
+import { handleApiError, handleBusinessError, showSuccess, ErrorLevel } from '../utils/errorHandler'
+import { useRouter } from 'vue-router'
+
+// 添加路由实例
+const router = useRouter()
 
 // 处理弹窗模式
 const props = defineProps({
@@ -199,21 +204,18 @@ const sendVerificationCode = async () => {
       try {
         loading.value = true
         // 发送验证码请求
-        const response = await request.post('/auth/send-verification', {
-          email: forgotPasswordForm.email,
-          type: 'reset_password'
-        })
-
-        if (response.data && response.data.code === 1) {
-          ElMessage.success('验证码已发送，请查收邮件')
-          showVerification.value = true
-          startCooldown()
-        } else {
-          ElMessage.error(response.data?.msg || '验证码发送失败')
-        }
+        const response = await auth.sendVerificationCode(forgotPasswordForm.email)
+        
+        // 使用业务错误处理工具检查响应
+        const error = handleBusinessError(response, '验证码发送失败', ErrorLevel.WARNING);
+        if (error) return; // 如果有错误，handleBusinessError已经显示了错误消息
+        
+        showSuccess('验证码已发送，请查收邮件')
+        showVerification.value = true
+        startCooldown()
       } catch (error) {
         console.error('发送验证码请求出错', error)
-        ElMessage.error('验证码发送失败，请稍后重试')
+        handleApiError(error, '验证码发送失败，请稍后重试', ErrorLevel.WARNING)
       } finally {
         loading.value = false
       }
@@ -261,29 +263,20 @@ const handleForgotPassword = async () => {
     }
 
     // 发送密码重置请求
-    const response = await request.post('/auth/forgot-password', requestData)
+    const response = await auth.forgotPassword(requestData)
 
-    if (response.data && response.data.code === 1) {
-      // 密码重置邮件发送成功
-      resetSuccess.value = true
-      ElMessage({
-        message: '重置密码链接已发送到您的邮箱',
-        type: 'success',
-        duration: 3000,
-        showClose: true
-      })
-    } else {
-      ElMessage.error(response.data?.msg || '密码重置请求失败')
-    }
+    // 使用业务错误处理工具检查响应
+    const error = handleBusinessError(response, '密码重置请求失败');
+    if (error) return; // 如果有错误，handleBusinessError已经显示了错误消息
+    
+    // 密码重置邮件发送成功
+    resetSuccess.value = true
+    
+    // 显示成功消息
+    showSuccess('重置密码链接已发送到您的邮箱', true)
   } catch (error) {
     console.error('密码重置请求出错', error)
-    if (error.response) {
-      ElMessage.error(error.response.data?.msg || `请求失败(${error.response.status})`)
-    } else if (error.request) {
-      ElMessage.error('服务器无响应，请检查网络连接')
-    } else {
-      ElMessage.error('请求错误: ' + error.message)
-    }
+    handleApiError(error, '密码重置请求失败，请稍后重试')
   } finally {
     loading.value = false
   }

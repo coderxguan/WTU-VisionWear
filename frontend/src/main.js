@@ -6,26 +6,9 @@ import router from './router';
 import ElementPlus from 'element-plus';
 import 'element-plus/dist/index.css';
 
-// 引入 axios
+// 引入 axios 和 API模块
 import axios from 'axios';
-import {getValidToken} from "./utils/auth.js";
-
-// 封装 axios 实例
-const request = axios.create({
-    baseURL: 'http://localhost:8080/api',
-    timeout: 1000 * 30,
-    headers: {
-        'Content-Type': 'application/json'
-    }
-});
-
-// 请求拦截器，动态获取最新的token
-request.interceptors.request.use(config => {
-    config.headers.token = getValidToken(); // 每次请求前获取最新token
-    return config;
-}, error => {
-    return Promise.reject(error);
-});
+import { request } from './api'; // 导入封装的request实例和API模块
 
 // 创建 Vue 实例并挂载
 const app = createApp(App);
@@ -36,9 +19,10 @@ app.use(ElementPlus);
 // 使用路由
 app.use(router);
 
-// 将 axios 注入到全局，使用 provide 进行依赖注入
+// 将 axios 和 request 注入到全局
 app.config.globalProperties.$axios = axios;
+app.config.globalProperties.$request = request;
 
 app.mount('#app');
 
-export default request;
+export default request; // 保持兼容性，继续导出request

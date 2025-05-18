@@ -46,10 +46,23 @@
                 <el-form-item label="风格">
                   <el-select v-model="formData.style" placeholder="请选择风格" style="width: 100%">
                     <el-option label="默认" value=""></el-option>
-                    <el-option label="写实风格" value="realistic"></el-option>
+                    <el-option label="模拟胶片" value="analog-film"></el-option>
                     <el-option label="动漫风格" value="anime"></el-option>
-                    <el-option label="艺术风格" value="artistic"></el-option>
-                    <el-option label="3D渲染" value="3d"></el-option>
+                    <el-option label="电影风格" value="cinematic"></el-option>
+                    <el-option label="漫画书风格" value="comic-book"></el-option>
+                    <el-option label="数字艺术" value="digital-art"></el-option>
+                    <el-option label="增强" value="enhance"></el-option>
+                    <el-option label="幻想艺术" value="fantasy-art"></el-option>
+                    <el-option label="等轴测图" value="isometric"></el-option>
+                    <el-option label="线条艺术" value="line-art"></el-option>
+                    <el-option label="低多边形" value="low-poly"></el-option>
+                    <el-option label="建模复合物" value="modeling-compound"></el-option>
+                    <el-option label="霓虹朋克" value="neon-punk"></el-option>
+                    <el-option label="折纸风格" value="origami"></el-option>
+                    <el-option label="摄影风格" value="photographic"></el-option>
+                    <el-option label="像素艺术" value="pixel-art"></el-option>
+                    <el-option label="3D模型" value="3d-model"></el-option>
+                    <el-option label="瓦片纹理" value="tile-texture"></el-option>
                   </el-select>
                 </el-form-item>
               </el-col>

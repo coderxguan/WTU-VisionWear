@@ -162,7 +162,8 @@ import { ref, onMounted, reactive } from 'vue'
 import { User, Lock, Message } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
-import request from '../main.js'
+import { auth } from '../api'
+import { handleApiError, handleBusinessError, showSuccess } from '../utils/errorHandler'
 
 // 新增的props，用于判断是否为弹窗模式
 const props = defineProps({
@@ -269,54 +270,36 @@ const handleRegister = async () => {
     }
 
     // 发送注册请求到后端API
-    const response = await request.post('/auth/register', registerData)
+    const response = await auth.register(registerData)
 
-    // 根据响应状态码处理不同情况
-    if (response.data.code === 1) { // 成功状态码为1
-      // 可以选择将用户信息存储在localStorage中
-      localStorage.setItem('userInfo', JSON.stringify({
-        username: registerForm.username,
-        email: registerForm.email
-      }))
+    // 使用业务错误处理工具检查响应
+    const error = handleBusinessError(response, '注册失败，请稍后重试');
+    if (error) return; // 如果有错误，handleBusinessError已经显示了错误消息
 
-      ElMessage({
-        message: response.data.msg || '注册成功！',
-        type: 'success',
-        duration: 2000,
-        showClose: true,
-        center: true
-      })
+    // 可以选择将用户信息存储在localStorage中
+    localStorage.setItem('userInfo', JSON.stringify({
+      username: registerForm.username,
+      email: registerForm.email
+    }))
 
-      // 注册成功后根据模式决定跳转到登录页面还是切换到登录弹窗
-      if (props.isDialog) {
-        emit('switch-to-login')
-      } else {
-        router.push({ name: 'Login' })
-      }
-    } else if (response.data.code === 0) {
-      // 处理业务逻辑错误 (用户名已存在或邮箱已注册)
-      ElMessage.error(response.data.msg || '注册失败，请稍后重试')
+    // 显示成功消息
+    showSuccess(response.data.msg || '注册成功！', true)
+
+    // 注册成功后根据模式决定跳转到登录页面还是切换到登录弹窗
+    if (props.isDialog) {
+      emit('switch-to-login')
     } else {
-      // 其他未预期的错误
-      ElMessage.error('注册失败，请稍后重试')
+      router.push({ name: 'Login' })
     }
   } catch (error) {
     console.error('注册过程中出错', error)
-    // 处理网络错误或服务器错误
-    if (error.response) {
-      // 服务器响应了，但状态码不是2xx
-      ElMessage.error(error.response.data?.msg || `注册失败(${error.response.status})`)
-    } else if (error.request) {
-      // 请求已发出，但没有收到响应
-      ElMessage.error('服务器无响应，请检查网络连接')
-    } else {
-      // 请求设置时出错
-      ElMessage.error('请求错误: ' + error.message)
-    }
+    // 使用统一错误处理工具
+    handleApiError(error, '注册请求失败，请稍后重试')
   } finally {
     loading.value = false
   }
 }
+
 // 显示用户协议
 const showTerms = () => {
   termsDialogVisible.value = true
