@@ -82,7 +82,7 @@
               <el-input
                   v-model="formData.prompt"
                   type="textarea"
-                  :rows="3"
+                  :rows="2"
                   placeholder="描述您想要的图像风格和内容（必填项）"
               ></el-input>
               <div class="form-tip">提示词越详细，生成的图像效果越好</div>
@@ -92,7 +92,7 @@
               <el-input
                   v-model="formData.negativePrompt"
                   type="textarea"
-                  :rows="2"
+                  :rows="1"
                   placeholder="描述您不希望出现在图片中的元素"
               ></el-input>
             </el-form-item>
@@ -124,17 +124,6 @@
             </el-row>
 
             <el-form-item>
-              <div class="form-check-list" v-if="!isFormValid">
-                <strong>生成前请确保：</strong>
-                <ul>
-                  <li :class="sourceImageUrl ? 'is-valid' : 'is-invalid'">
-                    已上传源图像
-                  </li>
-                  <li :class="formData.prompt.length >= 3 ? 'is-valid' : 'is-invalid'">
-                    已填写有效的提示词
-                  </li>
-                </ul>
-              </div>
               <el-button
                   type="primary"
                   :loading="isLoading"
@@ -240,7 +229,7 @@
 <script setup>
 import { ref, reactive, computed } from 'vue'
 import { ElMessage, ElNotification } from 'element-plus'
-import { Plus, Picture, Loading, Download, CopyDocument } from '@element-plus/icons-vue'
+import { Plus, Picture, Loading, Download, CopyDocument, Check } from '@element-plus/icons-vue'
 import { getValidToken } from "../utils/auth.js"
 import request from "../main.js"
 
@@ -263,6 +252,19 @@ const errorMessage = ref('')
 const generationTime = ref(null)
 const requestId = ref('')
 const uploadLoading = ref(false)
+
+// 支持的图片尺寸常量
+const SUPPORTED_DIMENSIONS = [
+  {width: 1024, height: 1024}, // 最常用的尺寸
+  {width: 1152, height: 896},
+  {width: 1216, height: 832},
+  {width: 1344, height: 768},
+  {width: 1536, height: 640},
+  {width: 640, height: 1536},
+  {width: 768, height: 1344},
+  {width: 832, height: 1216},
+  {width: 896, height: 1152}
+]
 
 // 表单验证规则
 const rules = {
@@ -292,6 +294,83 @@ const isFormValid = computed(() => {
   return sourceImageUrl.value && formData.prompt.length >= 3
 })
 
+// 图片尺寸处理函数
+const resizeImageIfNeeded = (file) => {
+  return new Promise((resolve) => {
+    const img = new Image()
+    const url = URL.createObjectURL(file)
+    
+    img.onload = () => {
+      URL.revokeObjectURL(url)
+      
+      // 检查尺寸是否已经符合要求
+      for (const dim of SUPPORTED_DIMENSIONS) {
+        if (img.width === dim.width && img.height === dim.height) {
+          console.log('图片尺寸已符合要求:', `${img.width}x${img.height}`)
+          resolve(file) // 直接返回原始文件
+          return
+        }
+      }
+      
+      // 计算原始图片的宽高比
+      const originalRatio = img.width / img.height
+      
+      // 找到最接近原始宽高比的支持尺寸
+      let bestMatch = SUPPORTED_DIMENSIONS[0]
+      let minRatioDifference = Math.abs((bestMatch.width / bestMatch.height) - originalRatio)
+      
+      for (const dim of SUPPORTED_DIMENSIONS) {
+        const ratioDifference = Math.abs((dim.width / dim.height) - originalRatio)
+        if (ratioDifference < minRatioDifference) {
+          minRatioDifference = ratioDifference
+          bestMatch = dim
+        }
+      }
+      
+      // 使用最佳匹配的尺寸
+      const targetWidth = bestMatch.width
+      const targetHeight = bestMatch.height
+      
+      console.log(`选择最接近的尺寸: ${targetWidth}x${targetHeight}，原始比例: ${originalRatio.toFixed(2)}，目标比例: ${(targetWidth/targetHeight).toFixed(2)}`)
+      
+      // 创建Canvas进行调整
+      const canvas = document.createElement('canvas')
+      canvas.width = targetWidth
+      canvas.height = targetHeight
+      const ctx = canvas.getContext('2d')
+      
+      // 绘制并保持宽高比
+      let sx = 0, sy = 0, sWidth = img.width, sHeight = img.height
+      
+      // 计算裁剪区域，保持宽高比并居中
+      if (img.width / img.height > targetWidth / targetHeight) {
+        sWidth = img.height * (targetWidth / targetHeight)
+        sx = (img.width - sWidth) / 2
+      } else {
+        sHeight = img.width * (targetHeight / targetWidth)
+        sy = (img.height - sHeight) / 2
+      }
+      
+      // 在画布上绘制调整后的图像
+      ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, targetWidth, targetHeight)
+      
+      // 转换为Blob
+      canvas.toBlob((blob) => {
+        // 创建新的File对象
+        const resizedFile = new File([blob], file.name, {
+          type: 'image/jpeg',
+          lastModified: Date.now()
+        })
+        
+        console.log(`图片已调整为 ${targetWidth}x${targetHeight}`)
+        resolve(resizedFile)
+      }, 'image/jpeg', 0.92) // 使用JPEG格式，92%质量
+    }
+    
+    img.src = url
+  })
+}
+
 // 上传前校验
 const beforeImageUpload = (file) => {
   const isImage = file.type.startsWith('image/')
@@ -307,11 +386,49 @@ const beforeImageUpload = (file) => {
     return false
   }
 
-  return true
+  // 添加尺寸检查和提示
+  return new Promise((resolve) => {
+    const img = new Image()
+    img.src = URL.createObjectURL(file)
+    img.onload = () => {
+      // 记录图片原始尺寸
+      URL.revokeObjectURL(img.src)
+      
+      // 检查图片尺寸是否符合API要求
+      const supportedDimensions = SUPPORTED_DIMENSIONS.map(d => `${d.width}x${d.height}`)
+      
+      const imgDimension = `${img.width}x${img.height}`
+      const isDimensionSupported = supportedDimensions.includes(imgDimension)
+      
+      if (!isDimensionSupported) {
+        // 计算原始图片的宽高比
+        const originalRatio = img.width / img.height
+        
+        // 找到最接近原始宽高比的支持尺寸
+        let bestMatch = SUPPORTED_DIMENSIONS[0]
+        let minRatioDifference = Math.abs((bestMatch.width / bestMatch.height) - originalRatio)
+        
+        for (const dim of SUPPORTED_DIMENSIONS) {
+          const ratioDifference = Math.abs((dim.width / dim.height) - originalRatio)
+          if (ratioDifference < minRatioDifference) {
+            minRatioDifference = ratioDifference
+            bestMatch = dim
+          }
+        }
+        
+        ElMessage({
+          message: `图片尺寸(${img.width}x${img.height})不符合要求，系统将自动调整为${bestMatch.width}x${bestMatch.height}`,
+          type: 'warning',
+          duration: 5000
+        })
+        // 尽管有警告，仍然允许上传并在上传过程中处理
+      }
+      resolve(true)
+    }
+  })
 }
 
 // 自定义上传
-// 修改uploadImage函数的相关部分
 const uploadImage = async (options) => {
   uploadLoading.value = true
   try {
@@ -322,15 +439,19 @@ const uploadImage = async (options) => {
 
     console.log('Token获取成功:', token.substring(0, 10) + '...')
 
+    // 添加图片预处理：调整尺寸
+    const processedFile = await resizeImageIfNeeded(options.file)
+    
     // 注意：确保字段名为'file'
     const formData = new FormData()
-    formData.append('file', options.file)
+    formData.append('file', processedFile)
 
     // 调试日志
     console.log('准备上传文件:', {
       fileName: options.file.name,
-      fileSize: options.file.size,
-      fileType: options.file.type
+      fileSize: processedFile.size,
+      fileType: processedFile.type,
+      originalSize: options.file.size
     })
 
     // 使用FormData作为参数，不要设置Content-Type
@@ -470,7 +591,7 @@ const generateImage = async () => {
     console.log('响应状态:', response.status)
     console.log('响应数据:', JSON.stringify(response.data))
 
-    if (response.data.code === 0 && response.data.data) {
+    if (response.data.code === 1 && response.data.data) {
       // 按照VO结构处理返回数据
       const result = response.data.data
       requestId.value = result.requestId
@@ -592,7 +713,7 @@ const copyImageUrl = () => {
 
 /* 表单内容 */
 .form-content {
-  padding-right: 10px;
+  padding-right: 5px;
 }
 
 /* 滑块值显示 */
@@ -600,7 +721,7 @@ const copyImageUrl = () => {
   text-align: center;
   color: var(--el-text-color-secondary);
   font-size: 12px;
-  margin-top: 2px;
+  margin-top: 0;
 }
 
 /* 上传样式 */
@@ -614,7 +735,7 @@ const copyImageUrl = () => {
   overflow: hidden;
   transition: border-color 0.3s;
   width: 100%;
-  height: 160px;
+  height: 140px;
 }
 
 .image-uploader:hover {
@@ -667,6 +788,7 @@ const copyImageUrl = () => {
   display: flex;
   flex-direction: column;
   width: 100%;
+  padding-left: 15px;
 }
 
 .result-title {
@@ -691,7 +813,7 @@ const copyImageUrl = () => {
 /* 图片占位符样式 */
 .placeholder-image {
   width: 100%;
-  height: 360px;
+  height: 450px;
   background-color: rgba(106, 152, 233, 0.05);
   border-radius: 8px;
   display: flex;
@@ -741,12 +863,21 @@ const copyImageUrl = () => {
 .image-wrapper {
   width: 100%;
   position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.image-wrapper:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
 /* 生成的图片样式 */
 .generated-image {
   width: 100%;
-  height: 360px;
+  height: 450px;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: var(--el-box-shadow-light);
@@ -856,12 +987,13 @@ const copyImageUrl = () => {
   }
 
   .result-container {
-    margin-top: 20px;
+    padding-left: 0;
+    margin-top: 10px;
   }
 
   .placeholder-image,
   .generated-image {
-    height: 300px;
+    height: 400px;
   }
 }
 
@@ -874,5 +1006,22 @@ const copyImageUrl = () => {
   .image-actions .el-button {
     width: 100%;
   }
+}
+
+/* 缩减表单项间距 */
+:deep(.el-form-item) {
+  margin-bottom: 12px;
+}
+
+/* 缩减文本框高度 */
+.el-form-item[label="提示词 *"] :deep(.el-textarea__inner),
+.el-form-item[label="负面提示词"] :deep(.el-textarea__inner) {
+  --el-input-text-height: 22px;
+}
+
+/* 优化滑块布局 */
+.el-row :deep(.el-slider) {
+  margin-top: 8px;
+  margin-bottom: 0;
 }
 </style>
