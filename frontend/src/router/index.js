@@ -26,7 +26,13 @@ const routes = [
       name: 'Home',
       children: [
         { path: '', component: RenderPage }, // 默认子页面
-        { path: 'fashion', component: FashionMain },
+        { 
+          path: 'fashion', 
+          component: FashionMain,
+          children: [
+            { path: '', redirect: 'option1' } // 默认重定向到 option1
+          ]
+        },
         { path: 'fashion/option1', component: FashionOption1 },
         { path: 'fashion/option2', component: FashionOption2 },
         { path: 'fashion/option3', component: FashionOption3 },

@@ -2,17 +2,17 @@
   <div class="container">
     <!-- 左边栏 -->
     <aside class="sidebar">
-      <div class="logo-container">
+      <router-link to="/home" class="logo-container" style="cursor: pointer; text-decoration: none;">
         <div class="logo">Vision<span class="logo-x">Wear</span></div>
-      </div>
+      </router-link>
 
       <router-link
-          to="/home/fashion"
+          to="/home/fashion/option1"
           class="menu-item el-menu-item"
           :class="{ active: activeFunction === 'model' }"
           @click="selectMenu('model')"
       >
-        <el-icon><Grid /></el-icon>服装模创意生成
+        <el-icon><Grid /></el-icon>服装创意生成
       </router-link>
 
       <div v-if="showSubMenu" class="submenu">
@@ -145,7 +145,9 @@ export default {
     selectMenu(name) {
       this.activeFunction = name;
       if (name === 'model') {
-        this.showSubMenu = !this.showSubMenu;
+        this.showSubMenu = true;
+        // 当点击服装创意生成时，自动选中图灵绘境子菜单
+        this.activeFunction = '选项1';
       } else if (!['选项1', '选项2', '选项3'].includes(name)) {
         this.showSubMenu = false;
       }
