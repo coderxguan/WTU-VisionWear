@@ -1,0 +1,30 @@
+{
+  "id": "4886894",
+  "name": "WTU",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "7937662",
+      "name": "方向-向左",
+      "font_class": "fangxiang-xiangzuo",
+      "unicode": "e615",
+      "unicode_decimal": 58901
+    },
+    {
+      "icon_id": "7937663",
+      "name": "方向-向右",
+      "font_class": "fangxiang-xiangyou",
+      "unicode": "e616",
+      "unicode_decimal": 58902
+    },
+    {
+      "icon_id": "7937661",
+      "name": "方向-向上",
+      "font_class": "fangxiang-xiangshang",
+      "unicode": "e614",
+      "unicode_decimal": 58900
+    }
+  ]
+}

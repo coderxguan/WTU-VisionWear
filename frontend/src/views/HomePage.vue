@@ -101,6 +101,7 @@
             <el-icon><PictureRounded /></el-icon>图片处理
           </router-link>
         </div>
+        <MyPicture></MyPicture>
         <userIconArea></userIconArea>
       </header>
 
@@ -111,8 +112,8 @@
 </template>
 
 <script>
-import '../styles/fontClass/iconfont.css';
 import UserIconArea from './userIconArea.vue';
+import MyPicture from './MyPicture.vue';
 import { ref } from 'vue';
 import {
   Grid, Edit, Brush,
@@ -122,6 +123,7 @@ import {
 
 export default {
   components: {
+    MyPicture,
     UserIconArea,
     Grid, Edit, Brush,
     PictureFilled, Picture, Monitor,
@@ -129,7 +131,6 @@ export default {
   },
   setup() {
     const searchText = ref('');
-
     return {
       searchText
     };
@@ -388,4 +389,5 @@ export default {
   height: 54px;
   line-height: 54px;
 }
+
 </style>
