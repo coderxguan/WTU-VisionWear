@@ -3,6 +3,7 @@ package com.wtu.controller;
 import com.wtu.result.Result;
 import com.wtu.service.ImageService;
 import com.wtu.service.ImageStorageService;
+import com.wtu.service.MaterialService;
 import com.wtu.utils.UserContext;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,6 +24,8 @@ public class UserController {
     // IOC 注入
     private final ImageService imageService;
 
+    private final MaterialService materialService;
+
     @GetMapping(value = "/getAllImage")
     @Operation(summary = "获取用户生成的所有图片URL")
     public Result<List<String>> getAllImage(HttpServletRequest httpServletRequest) {
@@ -39,4 +42,11 @@ public class UserController {
 
         return Result.success(imageUrls);
     }
+
+    @GetMapping("/getMaterial")
+    @Operation(summary = "获取素材库的图片")
+    public Result<List<String>> getMaterial(){
+        return Result.success(materialService.getMaterial());
+    }
+
 }

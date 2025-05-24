@@ -65,4 +65,6 @@ public interface ImageService {
      * @return 图像URL列表
      */
     List<String> getAllImageUrls(Long userId);
+
+
 }

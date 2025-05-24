@@ -21,6 +21,7 @@ import com.wtu.VO.SketchToImageVO;
 import com.wtu.VO.TextToImageVO;
 import com.wtu.config.StableDiffusionConfig;
 import com.wtu.entity.Image;
+import com.wtu.entity.Material;
 import com.wtu.mapper.ImageMapper;
 import com.wtu.service.ImageService;
 import com.wtu.service.ImageStorageService;
@@ -480,6 +481,8 @@ public class ImageServiceImpl implements ImageService {
         log.info("获取到用户 {} 的图像URL: {} 个", userId, imageUrls.size());
         return imageUrls;
     }
+
+
 
     // 创建文本到图像的请求体
     private ObjectNode createTextToImageRequestBody(TextToImageDTO request) {
