@@ -21,7 +21,6 @@ import com.wtu.VO.SketchToImageVO;
 import com.wtu.VO.TextToImageVO;
 import com.wtu.config.StableDiffusionConfig;
 import com.wtu.entity.Image;
-import com.wtu.entity.Material;
 import com.wtu.mapper.ImageMapper;
 import com.wtu.service.ImageService;
 import com.wtu.service.ImageStorageService;
@@ -32,10 +31,6 @@ import lombok.RequiredArgsConstructor;
 
 import com.tencentcloudapi.common.Credential;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpEntity;
@@ -49,10 +44,8 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.http.HttpMethod;
 
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -104,7 +97,7 @@ public class ImageServiceImpl implements ImageService {
             String result = transApi.getTransResult(text, "zh", "en");
             JsonNode jsonNode = objectMapper.readTree(result);
             JsonNode transResult = jsonNode.path("trans_result");
-            if (transResult.isArray() && transResult.size() > 0) {
+            if (transResult.isArray() && !transResult.isEmpty()) {
                 return transResult.get(0).path("dst").asText(text);
             }
             return text;
@@ -230,7 +223,7 @@ public class ImageServiceImpl implements ImageService {
     private String ttApiKey;
 
     @Override
-    public ImageFusionVO imageFusion(ImageFusionDTO request, Long userId) throws Exception {
+    public ImageFusionVO imageFusion(ImageFusionDTO request, Long userId){
         long startTime = System.currentTimeMillis();
         String requestId = UUID.randomUUID().toString();
 
@@ -330,7 +323,7 @@ public class ImageServiceImpl implements ImageService {
     }
 
 
-    public ImageFusionVO queryImageByJobId(String jobId, Long userId) throws Exception {
+    public ImageFusionVO queryImageByJobId(String jobId, Long userId) {
         String apiKey = ttApiKey;
         String fetchUrl = "https://api.ttapi.io/midjourney/v1/fetch";
 

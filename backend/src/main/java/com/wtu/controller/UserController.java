@@ -2,7 +2,6 @@ package com.wtu.controller;
 
 import com.wtu.result.Result;
 import com.wtu.service.ImageService;
-import com.wtu.service.ImageStorageService;
 import com.wtu.service.MaterialService;
 import com.wtu.utils.UserContext;
 import io.swagger.v3.oas.annotations.Operation;
