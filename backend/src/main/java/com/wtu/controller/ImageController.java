@@ -1,9 +1,11 @@
 package com.wtu.controller;
 
 
+import com.wtu.DTO.ImageFusionDTO;
 import com.wtu.DTO.ImageToImageDTO;
 import com.wtu.DTO.SketchToImageDTO;
 import com.wtu.DTO.TextToImageDTO;
+import com.wtu.VO.ImageFusionVO;
 import com.wtu.VO.ImageToImageVO;
 import com.wtu.VO.SketchToImageVO;
 import com.wtu.VO.TextToImageVO;
@@ -15,6 +17,7 @@ import com.wtu.utils.UserContext;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -38,6 +41,7 @@ public class ImageController {
     private final ImageService imageService;
     private final ImageStorageService imageStorageService;
     private final AliOssUtil aliOssUtil;
+
 
     @PostMapping("/text-to-image")
     @Operation(summary = "文生图功能")
@@ -116,6 +120,29 @@ public class ImageController {
             return Result.error("以图生图失败: " + e.getMessage());
         }
     }
+
+    @PostMapping("/image-fusion")
+    @Operation(summary = "图片融合功能")
+    public Result<ImageFusionVO> imageFusion(@RequestBody @Valid ImageFusionDTO request, HttpServletRequest httpServletRequest) {
+        try {
+            Long userId = UserContext.getCurrentUserId(httpServletRequest);
+            ImageFusionVO response = imageService.imageFusion(request, userId);
+
+            return Result.success(response);
+        } catch (Exception e) {
+            log.error("图片融合失败", e);
+            return Result.error("图片融合失败: " + e.getMessage());
+        }
+    }
+    @GetMapping("/image-fusion/result")
+    @Operation(summary = "获取图片融合结果")
+    public Result<ImageFusionVO> getFusionResult(@RequestParam String jobId, HttpServletRequest httpServletRequest) throws Exception {
+        Long userId = UserContext.getCurrentUserId(httpServletRequest);
+        ImageFusionVO response = imageService.queryImageByJobId(jobId, userId);
+        return Result.success(response);
+    }
+
+
     @PostMapping("/sketch-to-image")
     @Operation(summary = "线稿生图功能")
     public Result<List<String>> sketchToImage(@RequestBody @Validated SketchToImageDTO request,
