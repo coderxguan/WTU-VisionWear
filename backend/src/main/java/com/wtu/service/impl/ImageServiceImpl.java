@@ -11,9 +11,11 @@ import com.tencentcloudapi.aiart.v20221229.models.SketchToImageResponse;
 import com.tencentcloudapi.common.exception.TencentCloudSDKException;
 import com.tencentcloudapi.common.profile.ClientProfile;
 import com.tencentcloudapi.common.profile.HttpProfile;
+import com.wtu.DTO.ImageFusionDTO;
 import com.wtu.DTO.ImageToImageDTO;
 import com.wtu.DTO.SketchToImageDTO;
 import com.wtu.DTO.TextToImageDTO;
+import com.wtu.VO.ImageFusionVO;
 import com.wtu.VO.ImageToImageVO;
 import com.wtu.VO.SketchToImageVO;
 import com.wtu.VO.TextToImageVO;
@@ -22,6 +24,7 @@ import com.wtu.entity.Image;
 import com.wtu.mapper.ImageMapper;
 import com.wtu.service.ImageService;
 import com.wtu.service.ImageStorageService;
+import com.wtu.utils.ImageBase64Util;
 import com.wtu.utils.TransApi;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +36,7 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -40,10 +44,8 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -57,6 +59,7 @@ public class ImageServiceImpl implements ImageService {
     private final ObjectMapper objectMapper;
     private final ImageStorageService imageStorageService;
     private final ImageMapper imageMapper;
+    private final ImageBase64Util imageBase64Util;
 
     // 百度翻译API
     private TransApi transApi;
@@ -94,7 +97,7 @@ public class ImageServiceImpl implements ImageService {
             String result = transApi.getTransResult(text, "zh", "en");
             JsonNode jsonNode = objectMapper.readTree(result);
             JsonNode transResult = jsonNode.path("trans_result");
-            if (transResult.isArray() && transResult.size() > 0) {
+            if (transResult.isArray() && !transResult.isEmpty()) {
                 return transResult.get(0).path("dst").asText(text);
             }
             return text;
@@ -215,6 +218,56 @@ public class ImageServiceImpl implements ImageService {
         }
     }
 
+    // 图片融合
+    @Value("${vision.ttapi.api-key}")
+    private String ttApiKey;
+
+    @Override
+    public ImageFusionVO imageFusion(ImageFusionDTO request, Long userId){
+        long startTime = System.currentTimeMillis();
+        String requestId = UUID.randomUUID().toString();
+
+        // 1. 图片URL转Base64
+        List<String> base64Images = request.getImageUrlList().stream()
+                .map(imageBase64Util::imageUrlToBase64)
+                .collect(Collectors.toList());
+
+        // 2. 组装请求体
+        Map<String, Object> body = new HashMap<>();
+        body.put("imgBase64Array", base64Images);
+        body.put("dimensions", request.getDimensions());
+        body.put("mode", request.getMode());
+        body.put("hookUrl", request.getHookUrl());
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("TT-API-KEY", ttApiKey);
+
+        HttpEntity<Map<String, Object>> httpEntity = new HttpEntity<>(body, headers);
+
+        // 3. 调用blend接口提交任务
+        ResponseEntity<JsonNode> responseEntity = restTemplate.postForEntity(
+                "https://api.ttapi.io/midjourney/v1/blend",
+                httpEntity,
+                JsonNode.class);
+
+        JsonNode responseJson = responseEntity.getBody();
+        if (responseJson == null || !"SUCCESS".equals(responseJson.path("status").asText())) {
+            throw new RuntimeException("图片融合失败: " + (responseJson != null ? responseJson.path("message").asText() : "无响应"));
+        }
+
+        String jobId = responseJson.path("data").path("jobId").asText();
+        log.info("图片融合任务提交成功，jobId={}", jobId);
+
+        // 4. 只返回jobId，前端或调用方后续用jobId查询结果
+        return ImageFusionVO.builder()
+                .requestId(requestId)
+                .jobId(jobId)  // 这里VO需新增jobId字段
+                .generationTimeMs(System.currentTimeMillis() - startTime)
+                .build();
+    }
+
+
     // 线稿生图
     private static final String TENCENT_REGION = "ap-shanghai"; // 根据需求调整地域
 
@@ -267,6 +320,65 @@ public class ImageServiceImpl implements ImageService {
             log.error("线稿生图失败", e);
             throw new Exception("线稿生图失败: " + e.getMessage());
         }
+    }
+
+
+    public ImageFusionVO queryImageByJobId(String jobId, Long userId) {
+        String apiKey = ttApiKey;
+        String fetchUrl = "https://api.ttapi.io/midjourney/v1/fetch";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("TT-API-KEY", apiKey);
+
+        Map<String, String> body = new HashMap<>();
+        body.put("jobId", jobId);
+
+        HttpEntity<Map<String, String>> request = new HttpEntity<>(body, headers);
+
+        ResponseEntity<JsonNode> response = restTemplate.postForEntity(fetchUrl, request, JsonNode.class);
+        JsonNode responseJson = response.getBody();
+
+        if (responseJson == null) {
+            throw new RuntimeException("无响应");
+        }
+
+        String status = responseJson.path("status").asText();
+        if (!"SUCCESS".equals(status)) {
+            String msg = responseJson.path("message").asText();
+            throw new RuntimeException("查询失败: " + msg);
+        }
+
+        JsonNode dataNode = responseJson.path("data");
+        String discordImageUrl = dataNode.path("discordImage").asText(null);
+        if (discordImageUrl == null || discordImageUrl.isEmpty()) {
+            throw new RuntimeException("未获取到图片地址");
+        }
+
+        // 这里直接返回discordImageUrl，不保存到OSS
+        ImageFusionVO.GeneratedImage generatedImage = ImageFusionVO.GeneratedImage.builder()
+                .imageId(null)  // 不保存OSS，imageId为空
+                .imageUrl(discordImageUrl)
+                .build();
+
+
+        return ImageFusionVO.builder()
+                .requestId(UUID.randomUUID().toString())
+                .images(Collections.singletonList(generatedImage))
+                .generationTimeMs(0)
+                .build();
+    }
+
+
+    // 辅助方法：生成文件名
+    private String generateFileName(String url, Long userId) {
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String randomStr = UUID.randomUUID().toString().substring(0, 8);
+        String extension = url.contains(".png") ? ".png" :
+                url.contains(".jpg") ? ".jpg" :
+                        url.contains(".webp") ? ".webp" : ".png";
+
+        return String.format("midjourney/%d/%s_%s%s", userId, timestamp, randomStr, extension);
     }
 
 
@@ -362,6 +474,8 @@ public class ImageServiceImpl implements ImageService {
         log.info("获取到用户 {} 的图像URL: {} 个", userId, imageUrls.size());
         return imageUrls;
     }
+
+
 
     // 创建文本到图像的请求体
     private ObjectNode createTextToImageRequestBody(TextToImageDTO request) {
