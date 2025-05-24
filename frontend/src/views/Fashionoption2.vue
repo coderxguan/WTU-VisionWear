@@ -1,63 +1,31 @@
 <script setup>
+import drag from './drag.vue';
 import { ref } from 'vue'
-
 const textFeature = ref('')
-const sketchFileList = ref([])
-const referenceFileList = ref([])
-const sketchPreviewUrl = ref('')
-const referencePreviewUrl = ref('')
 const check = ref(null)
-const currentPreviewFileName = ref('')
+const showUrl = ref('')
 
-const handleSketchChange = (file, fileList) => {
-    sketchFileList.value = fileList.slice(-1)
-    if (sketchFileList.value.length > 0 && sketchFileList.value[0].raw) {
-      sketchPreviewUrl.value = URL.createObjectURL(sketchFileList.value[0].raw)
+const changeShow = (url, style) => {
+  if (style === 'update') {
+    if (showUrl.value === url) {
+      // 如果相同，先清空再赋值（强制更新）
+      showUrl.value = ''
+      setTimeout(() => {
+        showUrl.value = url
+      }, 0)
+    } else {
+      showUrl.value = url
     }
-}
-
-const handleReferenceChange = (file, fileList) => {
-  referenceFileList.value = fileList.slice(-1)
-    if (referenceFileList.value.length > 0 && referenceFileList.value[0].raw) {
-      referencePreviewUrl.value = URL.createObjectURL(referenceFileList.value[0].raw)
+  } else {
+    if (showUrl.value === url) {
+      showUrl.value = ''
     }
-}
-
-// 删除图片
-const handleRemove = (file, fileList, type) => {
-  if (type === 'sketch') {
-    if (currentPreviewFileName.value === sketchFileList.value[0]?.name) {
-      check.value.innerHTML = ''
-      currentPreviewFileName.value = '' // 清空记录
-    }
-    sketchFileList.value = []
-    sketchPreviewUrl.value = ''
-  } else if (type === 'reference') {
-    if (currentPreviewFileName.value === referenceFileList.value[0]?.name) {
-      check.value.innerHTML = ''
-      currentPreviewFileName.value = '' // 清空记录
-    }
-    referenceFileList.value = []
-    referencePreviewUrl.value = ''
   }
 }
 
-//右侧第一个格子展示图片
-const HandlePreview = (file) => {
-  const img = document.createElement('img')
-  img.src = URL.createObjectURL(file.raw)
-  img.style.width = '100%'
-  img.style.height = '100%'
-  img.style.objectFit = 'contain'
-  
-  check.value.innerHTML = '' // 清空之前的内容
-  check.value.appendChild(img) // 把新图片加进去
-  currentPreviewFileName.value = file.name
+const changePicture = (url) => {
+  showUrl.value = url
 }
-
-
-
-// 第二个格子展示result图片
 </script>
 
 <template>
@@ -66,44 +34,14 @@ const HandlePreview = (file) => {
         <el-aside width="200px" class="styleFusionMenu">
           <ul class="dataList">
             <li class="sketch">
-              <p>款式图*<el-button type="round" @click="handleRemove(file, fileList, 'sketch')">清空</el-button></p>
-              <div class="showPicture" v-if="sketchFileList.length > 0 && sketchFileList[0].raw" @click="HandlePreview(sketchFileList[0])">
-                <img :src= "sketchPreviewUrl"/>
-              </div>
-              <el-upload v-if="sketchFileList.length < 1"
-                class="upload-sketch"
-                drag
-                show-file-list=false
-                :auto-upload="false"
-                :file-list="sketchFileList"
-                :on-change="handleSketchChange"
-                :on-exceed="handleExceed"
-                :on-preview="handlePreview"
-                accept=".jpg,.jpeg,.png"
-              >
-              点击或拖动以上传
-              </el-upload>
+              <drag @update="changeShow" @click="changePicture">款式图</drag>
             </li>
   
             <li class="reference">
-              <p>参考图*<el-button type="round" @click="handleRemove(file, fileList, 'reference')">清空</el-button></p>
-              <div class="showPicture" v-if="referenceFileList.length > 0 && referenceFileList[0].raw" @click="HandlePreview(referenceFileList[0])">
-                <img :src= "referencePreviewUrl"/>
-              </div>
-              <el-upload v-if="referenceFileList.length < 1"
-                class="upload-reference"
-                drag
-                :auto-upload="false"
-                :file-list="referenceFileList"
-                :on-change="handleReferenceChange"
-                :on-exceed="handleExceed"
-                :on-preview="handlePreview"
-                accept=".jpg,.jpeg,.png"
-              >
-              点击或拖动以上传
-              </el-upload>
+              <drag @update="changeShow" @click="changePicture">参考图</drag>
             </li>
           </ul>
+
           <div class="designFeature">
             <p>设计特征</p>
             <el-input
@@ -114,6 +52,7 @@ const HandlePreview = (file) => {
               placeholder="请输入对设计的描述或描述提示词提高生成准度"
             />
           </div>
+          
           <div class="create">
             <el-button type="success" plain style="width: 100%">一键生成</el-button>
           </div>
@@ -121,7 +60,7 @@ const HandlePreview = (file) => {
   
         <el-main class="show">
           <div class="check" ref="check">
-
+            <img v-if="showUrl" :src="showUrl" style="width: 100%; height: 100%; object-fit: contain;" />
           </div>
           <div class="result">
 

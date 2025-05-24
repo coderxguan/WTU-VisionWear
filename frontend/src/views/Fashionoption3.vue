@@ -1,3 +1,3 @@
 <template>
-    3
+  3
 </template>
